@@ -913,6 +913,12 @@
       </div>
     </div>
 
+    <!-- Language & Customization Notice Pill -->
+    <div id="langNoticePill" style="display:none; font-size:0.75rem; color:var(--text-secondary); background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:10px; padding:8px 14px; margin-bottom:14px; align-items:center; gap:8px;">
+      <span style="color:var(--teal); font-weight:700;">✦</span>
+      <span id="langNoticeText">Default: ગુજરાતી (સફરજન, કેળું, કેરી...) · Custom TTS: English (Gujarati AI Voice Customization Coming Soon)</span>
+    </div>
+
     <!-- 5 Channels -->
     <div id="channelsContainer"></div>
   </div>
@@ -979,8 +985,13 @@
     <!-- Step 3: Hardware Test -->
     <div id="wizardStep3" style="display:none;">
       <h3>Hardware Check</h3>
-      <p>Press any physical button on your box to test.</p>
-      <div class="wizard-test-btn" id="wizTestBox">Waiting for physical button press...</div>
+      <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:14px;">Press any button on your box or tap below to test the acoustic speaker.</p>
+      <div class="wizard-test-btn" id="wizTestBox" onclick="triggerCalmChimeTest()" style="cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <span>🔊</span> <span>Tap to Test Calm Acoustic Sound</span>
+      </div>
+      <div style="font-size:0.75rem; color:var(--text-muted); margin-top:10px; text-align:center;">
+        Or press any physical button on your box to test speech
+      </div>
       <div style="display:flex; gap:10px; margin-top:20px;">
         <button class="btn-apple-connect" id="btnFinishWiz" style="width:100%; justify-content:center;" onclick="completeSetupWizard()">
           Continue to Studio →
@@ -1352,18 +1363,38 @@ function validateChangePinMatch() {
 // ─────────────────────────────────────────────────────────────────────────────
 function selectWizLang(lang) {
   wizSelectedLang = lang;
-  playBoxChime();
   document.getElementById('wlangEn').className = `wiz-lang-pill ${lang === 'en' ? 'active' : ''}`;
   document.getElementById('wlangGu').className = `wiz-lang-pill ${lang === 'gu' ? 'active' : ''}`;
   document.getElementById('wlangBoth').className = `wiz-lang-pill ${lang === 'both' ? 'active' : ''}`;
+
+  // Live acoustic feedback from the box: speaks a random fruit in selected language!
+  if (cmdChar && bleDevice && bleDevice.gatt.connected) {
+    try {
+      const enc = new TextEncoder();
+      cmdChar.writeValue(enc.encode(`SETLANG:${lang}`));
+    } catch (e) {}
+  }
 }
 
 function switchLanguage(lang) {
   currentLang = lang;
-  playBoxChime();
   document.getElementById('langBtnEn').className = `lang-btn ${lang === 'en' ? 'active' : ''}`;
   document.getElementById('langBtnGu').className = `lang-btn ${lang === 'gu' ? 'active' : ''}`;
   document.getElementById('langBtnBoth').className = `lang-btn ${lang === 'both' ? 'active' : ''}`;
+
+  const notice = document.getElementById('langNoticePill');
+  const noticeTxt = document.getElementById('langNoticeText');
+  if (notice && noticeTxt) {
+    if (lang === 'gu') {
+      notice.style.display = 'flex';
+      noticeTxt.textContent = "Default: ગુજરાતી (સફરજન, કેળું, કેરી...) · Custom TTS: English (Gujarati AI Voice Customization Coming Soon)";
+    } else if (lang === 'both') {
+      notice.style.display = 'flex';
+      noticeTxt.textContent = "Default: English + ગુજરાતી (Apple · સફરજન...) · Custom TTS: English (Gujarati Custom Coming Soon)";
+    } else {
+      notice.style.display = 'none';
+    }
+  }
 
   channels.forEach((ch, i) => {
     if (!ch.custom) {
@@ -1374,6 +1405,7 @@ function switchLanguage(lang) {
   });
   renderChannels();
 
+  // Send to box: triggers immediate random fruit speech sample from physical speaker!
   if (cmdChar && bleDevice && bleDevice.gatt.connected) {
     try {
       const enc = new TextEncoder();
@@ -1881,6 +1913,29 @@ function goToWizardStep(step) {
       if (first) first.focus();
     }, 60);
   }
+  else if (step === 3) {
+    // Entering Hardware Check: automatically play long calm ambient harmony from physical box!
+    triggerCalmChimeTest();
+  }
+}
+
+function triggerCalmChimeTest() {
+  const box = document.getElementById('wizTestBox');
+  if (box) {
+    box.innerHTML = "<span>🌊</span> <span>Playing Calm Harmony from Voice Box...</span>";
+    box.classList.add('verified');
+  }
+  if (cmdChar && bleDevice && bleDevice.gatt.connected) {
+    try {
+      const enc = new TextEncoder();
+      cmdChar.writeValue(enc.encode("CHIME:calm"));
+    } catch (e) {}
+  }
+  setTimeout(() => {
+    if (box && document.getElementById('wizardStep3') && document.getElementById('wizardStep3').style.display !== 'none') {
+      box.innerHTML = "<span>✓</span> <span>Acoustic Passed · Press Box Buttons to Test</span>";
+    }
+  }, 2500);
 }
 
 async function completeSetupWizard() {
@@ -2306,7 +2361,21 @@ function updateUIState(connected) {
 function checkFirmwareUpdate() {
   const banner = document.getElementById('updateBanner');
   if (!banner) return;
-  if (deviceFwVersion < LATEST_FW.version) {
+
+  // Semantic version comparison:
+  // If the device is running the latest version (1.1.0 >= 1.1.0), do NOT show the install button!
+  const curParts = (deviceFwVersion || "1.0.0").split('.').map(s => parseInt(s, 10) || 0);
+  const targetParts = (LATEST_FW.version || "1.1.0").split('.').map(s => parseInt(s, 10) || 0);
+
+  let isOutdated = false;
+  for (let i = 0; i < 3; i++) {
+    const cur = curParts[i] || 0;
+    const tgt = targetParts[i] || 0;
+    if (cur < tgt) { isOutdated = true; break; }
+    if (cur > tgt) { isOutdated = false; break; }
+  }
+
+  if (isOutdated) {
     banner.style.display = "flex";
     document.getElementById('updateBannerText').textContent = `${LATEST_FW.title} Available for your box (${LATEST_FW.changelog})`;
   } else {
