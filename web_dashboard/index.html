@@ -831,6 +831,59 @@
   }
   .footer-reset-btn:hover { text-decoration: underline; }
 
+  /* Diwali Support Tooltip */
+  .diwali-support-pill {
+    position: relative;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--teal);
+    text-decoration: underline dotted var(--teal);
+    text-underline-offset: 3px;
+    transition: color 0.2s ease;
+    display: inline-block;
+  }
+  .diwali-support-pill:hover,
+  .diwali-support-pill:focus {
+    color: #F59E0B;
+  }
+  .diwali-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    width: 290px;
+    background: #0F172A;
+    color: #F8FAFC;
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 0.74rem;
+    line-height: 1.5;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45), 0 0 16px rgba(245, 158, 11, 0.2);
+    z-index: 1000;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+    text-align: left;
+  }
+  .diwali-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: #0F172A transparent transparent transparent;
+  }
+  .diwali-support-pill:hover .diwali-tooltip,
+  .diwali-support-pill:focus .diwali-tooltip {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
   input[type="file"] { display: none; }
 </style>
 </head>
@@ -1115,7 +1168,7 @@
 <!-- Footer -->
 <footer>
   <div class="footer-inner">
-    <span>Voice Box · Creato4 Lab · Till 31 Dec 2026</span>
+    <span>Voice Box · Creato4 Lab · <span class="diwali-support-pill" tabindex="0">Till 31 Dec 2026<span class="diwali-tooltip">🪔 <strong>Official App Support Active</strong><br>Complimentary support is active till <strong>31 Dec 2026</strong>.<br><br>This assistive web companion is engineered with love by <strong>Creato4 Lab</strong> as a Diwali gift for Khushi’s Voice Box.</span></span></span>
     <div style="display:flex; gap:12px; align-items:center;">
       <button class="footer-btn" id="footerRollbackBtn" onclick="handleRollbackFirmware()" style="display:none;">Rollback Firmware</button>
       <button class="footer-reset-btn" id="footerResetBtn" onclick="handleFactoryReset()">Factory Reset & Format</button>
@@ -1251,10 +1304,10 @@ let fileTargetIndex = -1;
 
 // Latest OTA Release Config
 const LATEST_FW = {
-  version: "1.1.0",
-  title: "VoiceOS v1.1",
-  binUrl: "firmware/voicebox_fw_v1.0.bin",
-  changelog: "Maximum loud shouting engine, Gujarati speech & anti-tamper security"
+  version: "1.2.0",
+  title: "VoiceOS v1.2",
+  binUrl: "firmware/voicebox_fw_v1.2.bin",
+  changelog: "Live cognitive delay preview, smooth instant button touch & Diwali gift edition"
 };
 
 // Mic recording state
@@ -1377,7 +1430,7 @@ function validateChangePinMatch() {
 //  COGNITIVE PROCESSING DELAY & LANGUAGE CONTROLLER
 // ─────────────────────────────────────────────────────────────────────────────
 let cognitiveDelayMs = 1200;
-let wizSelectedCogDelay = 1200;
+let wizSelectedCogDelay = 500;
 
 function selectWizCogDelay(delay) {
   wizSelectedCogDelay = delay;
@@ -1388,6 +1441,15 @@ function selectWizCogDelay(delay) {
   document.getElementById('wcogStandard').className = `wiz-lang-pill ${delay === 1200 ? 'active' : ''}`;
   document.getElementById('wcogPaced').className = `wiz-lang-pill ${delay === 2000 ? 'active' : ''}`;
   playUiSound('tap');
+
+  // Trigger live acoustic preview demonstration directly from physical box!
+  if (cmdChar && bleDevice && bleDevice.gatt.connected) {
+    try {
+      const enc = new TextEncoder();
+      cmdChar.writeValue(enc.encode(`SETDELAY:${delay}`));
+      toast(`⏱️ ${(delay / 1000).toFixed(1)}s Anti-Spam Latch (Testing preview on box...)`);
+    } catch (e) {}
+  }
 
   if (fName && preservedName && fName.value !== preservedName) {
     fName.value = preservedName;
@@ -1406,7 +1468,7 @@ function cycleCogDelay() {
     try {
       const enc = new TextEncoder();
       cmdChar.writeValue(enc.encode(`SETDELAY:${cognitiveDelayMs}`));
-      toast(`Cognitive Pacing: ${(cognitiveDelayMs / 1000).toFixed(1)}s Anti-Spam`);
+      toast(`⏱️ ${(cognitiveDelayMs / 1000).toFixed(1)}s Anti-Spam Latch (Testing pacing preview...)`);
     } catch (e) {}
   }
 }
@@ -1429,7 +1491,7 @@ function selectWizLang(lang) {
   if (cmdChar && bleDevice && bleDevice.gatt.connected) {
     try {
       const enc = new TextEncoder();
-      cmdChar.writeValue(enc.encode(`SETLANG:${lang}`));
+      cmdChar.writeValue(enc.encode(`SETLANG:${lang}:preview`));
     } catch (e) {}
   }
 
@@ -1988,10 +2050,10 @@ function highlightButtonPress(btnIdx) {
   if (testBox && document.getElementById('wizardStep3').style.display !== 'none') {
     testBox.textContent = `✓ Detected: Button ${btnIdx + 1} (${channels[btnIdx].label || defaultFruits[btnIdx]})`;
     testBox.classList.add('verified');
-    if (btnFinish) btnFinish.textContent = "✓ Verified! Entering Studio...";
-    setTimeout(() => {
-      completeSetupWizard();
-    }, 700);
+    if (btnFinish) {
+      btnFinish.textContent = "✓ Verified! Click to Enter Studio →";
+      btnFinish.focus();
+    }
   }
 }
 
@@ -2397,9 +2459,14 @@ async function completeSetupWizard() {
     const enc = new TextEncoder();
     await cmdChar.writeValue(enc.encode(`SETUP:${pin}:${name}`));
     await new Promise(r => setTimeout(r, 60));
+    // Save language quietly without speaking random fruit
     await cmdChar.writeValue(enc.encode(`SETLANG:${wizSelectedLang}`));
     await new Promise(r => setTimeout(r, 60));
-    await cmdChar.writeValue(enc.encode(`SETDELAY:${wizSelectedCogDelay}`));
+    // Save cognitive delay quietly
+    await cmdChar.writeValue(enc.encode(`SETDELAY:${wizSelectedCogDelay}:quiet`));
+    await new Promise(r => setTimeout(r, 60));
+    // Play ONE serene calm confirmation harmony from physical speaker
+    await cmdChar.writeValue(enc.encode("CHIME"));
     switchLanguage(wizSelectedLang);
     cognitiveDelayMs = wizSelectedCogDelay;
     updateCogDelayBtnText();
@@ -2657,6 +2724,19 @@ function handleBleNotification(event) {
   if (val.startsWith("PRESS:")) {
     const idx = parseInt(val.substring(6));
     highlightButtonPress(idx);
+  }
+  else if (val.startsWith("LATCH:")) {
+    const idx = parseInt(val.substring(6));
+    const pill = document.getElementById(`sbtn${idx}`);
+    if (pill) {
+      pill.style.borderColor = "var(--coral)";
+      pill.style.transform = "scale(0.95)";
+      setTimeout(() => {
+        pill.style.borderColor = "";
+        pill.style.transform = "";
+      }, 350);
+    }
+    toast(`⏱️ ${(cognitiveDelayMs / 1000).toFixed(1)}s Anti-Spam Latch`);
   }
   else if (val.startsWith("ST:")) {
     // ST:<isSetup>:<ownerName>:<fwVersion>:<currentLang>:<cognitiveDelayMs>
