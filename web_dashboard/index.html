@@ -884,6 +884,10 @@
           <button class="lang-btn" id="langBtnGu" onclick="switchLanguage('gu')">ગુજ</button>
           <button class="lang-btn" id="langBtnBoth" onclick="switchLanguage('both')">Both</button>
         </div>
+        <!-- Cognitive Processing Delay & Caregiver Badges -->
+        <button class="pill-btn" id="btnCogDelay" onclick="cycleCogDelay()" title="Cognitive Processing Anti-Spam Latch">⏱️ 1.2s Pacing</button>
+        <a href="Voice_Box_Caregiver_PIN_Card.png" download="Voice_Box_Caregiver_PIN_Card.png" class="pill-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px;" title="Download Caregiver PIN Card">🎴 PIN Card</a>
+        <a href="Voice_Box_Instagram_Story.png" download="Voice_Box_Instagram_Story.png" class="pill-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px;" title="Share Activation Story">📱 Story</a>
         <button class="pill-btn" onclick="openChangePinModal()">Change PIN</button>
         <button class="pill-btn" onclick="handleSleepDevice()">Sleep</button>
         <button class="pill-btn danger" onclick="disconnectBLE()">Disconnect</button>
@@ -952,6 +956,13 @@
         <button class="wiz-lang-pill active" id="wlangEn" onclick="selectWizLang('en')">English</button>
         <button class="wiz-lang-pill" id="wlangGu" onclick="selectWizLang('gu')">ગુજરાતી</button>
         <button class="wiz-lang-pill" id="wlangBoth" onclick="selectWizLang('both')">Both (બંને)</button>
+      </div>
+
+      <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px; margin-top:14px;">Cognitive Processing Delay (Anti-Spam Latch):</p>
+      <div class="wiz-lang-row" style="margin-bottom:20px;">
+        <button class="wiz-lang-pill" id="wcogFast" onclick="selectWizCogDelay(500)">0.5s Fast</button>
+        <button class="wiz-lang-pill active" id="wcogStandard" onclick="selectWizCogDelay(1200)">1.2s Calm</button>
+        <button class="wiz-lang-pill" id="wcogPaced" onclick="selectWizCogDelay(2000)">2.0s Paced</button>
       </div>
 
       <button class="btn-apple-connect" style="width:100%; justify-content:center;" onclick="goToWizardStep(2)">
@@ -1359,8 +1370,40 @@ function validateChangePinMatch() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  LANGUAGE CONTROLLER (ENGLISH, GUJARATI, BOTH)
+//  COGNITIVE PROCESSING DELAY & LANGUAGE CONTROLLER
 // ─────────────────────────────────────────────────────────────────────────────
+let cognitiveDelayMs = 1200;
+let wizSelectedCogDelay = 1200;
+
+function selectWizCogDelay(delay) {
+  wizSelectedCogDelay = delay;
+  document.getElementById('wcogFast').className = `wiz-lang-pill ${delay === 500 ? 'active' : ''}`;
+  document.getElementById('wcogStandard').className = `wiz-lang-pill ${delay === 1200 ? 'active' : ''}`;
+  document.getElementById('wcogPaced').className = `wiz-lang-pill ${delay === 2000 ? 'active' : ''}`;
+  playUiSound('tap');
+}
+
+function cycleCogDelay() {
+  playUiSound('tap');
+  if (cognitiveDelayMs === 500) cognitiveDelayMs = 1200;
+  else if (cognitiveDelayMs === 1200) cognitiveDelayMs = 2000;
+  else cognitiveDelayMs = 500;
+  updateCogDelayBtnText();
+
+  if (cmdChar && bleDevice && bleDevice.gatt.connected) {
+    try {
+      const enc = new TextEncoder();
+      cmdChar.writeValue(enc.encode(`SETDELAY:${cognitiveDelayMs}`));
+      toast(`Cognitive Pacing: ${(cognitiveDelayMs / 1000).toFixed(1)}s Anti-Spam`);
+    } catch (e) {}
+  }
+}
+
+function updateCogDelayBtnText() {
+  const btn = document.getElementById('btnCogDelay');
+  if (btn) btn.textContent = `⏱️ ${(cognitiveDelayMs / 1000).toFixed(1)}s Pacing`;
+}
+
 function selectWizLang(lang) {
   wizSelectedLang = lang;
   document.getElementById('wlangEn').className = `wiz-lang-pill ${lang === 'en' ? 'active' : ''}`;
@@ -1954,7 +1997,11 @@ async function completeSetupWizard() {
     await cmdChar.writeValue(enc.encode(`SETUP:${pin}:${name}`));
     await new Promise(r => setTimeout(r, 60));
     await cmdChar.writeValue(enc.encode(`SETLANG:${wizSelectedLang}`));
+    await new Promise(r => setTimeout(r, 60));
+    await cmdChar.writeValue(enc.encode(`SETDELAY:${wizSelectedCogDelay}`));
     switchLanguage(wizSelectedLang);
+    cognitiveDelayMs = wizSelectedCogDelay;
+    updateCogDelayBtnText();
   } catch (e) {}
 
   updateUIState(true);
@@ -2199,16 +2246,19 @@ function handleBleNotification(event) {
     highlightButtonPress(idx);
   }
   else if (val.startsWith("ST:")) {
-    // ST:<isSetup>:<ownerName>:<fwVersion>:<currentLang>
+    // ST:<isSetup>:<ownerName>:<fwVersion>:<currentLang>:<cognitiveDelayMs>
     const parts = val.split(':');
     const setupStatus = parts[1] === "1";
     const name = parts[2] || "Voice Box";
     const fwVer = parts[3] || "1.0.0";
     const langIdx = parts[4] || "0";
+    const delay = parseInt(parts[5], 10) || 1200;
 
     isDeviceSetup = setupStatus;
     deviceName = name;
     deviceFwVersion = fwVer;
+    cognitiveDelayMs = delay;
+    updateCogDelayBtnText();
     document.getElementById('deviceNameLabel').textContent = name;
     document.getElementById('headerBrandTitle').textContent = name;
 
