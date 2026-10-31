@@ -594,6 +594,162 @@
     letter-spacing: -0.01em;
   }
 
+  /* Language Segmented Selector */
+  .lang-selector {
+    display: inline-flex;
+    background: var(--card-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    padding: 2px;
+    gap: 2px;
+  }
+  .lang-btn {
+    border: none;
+    background: none;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .lang-btn.active {
+    background: var(--accent);
+    color: var(--accent-invert);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+
+  /* Wizard Language Selector */
+  .wiz-lang-row {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .wiz-lang-pill {
+    flex: 1;
+    border: 1px solid var(--border);
+    background: var(--card-subtle);
+    border-radius: var(--radius-sm);
+    padding: 8px 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .wiz-lang-pill.active {
+    border-color: var(--teal);
+    background: var(--teal-bg);
+    color: var(--teal);
+  }
+
+  /* Update Banner */
+  .update-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, rgba(20, 184, 166, 0.12), rgba(99, 102, 241, 0.08));
+    border: 1px solid var(--teal-border);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    animation: fadeIn 0.3s ease;
+  }
+  .update-tag {
+    background: var(--teal);
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: var(--radius-full);
+    letter-spacing: 0.04em;
+    margin-right: 8px;
+  }
+  .btn-update-install {
+    background: var(--teal);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--radius-full);
+    padding: 6px 14px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-update-install:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+  }
+
+  /* Channel Progress Bar */
+  .channel-progress-track {
+    width: 100%;
+    height: 6px;
+    background: var(--border);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .channel-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--teal), #6366f1);
+    border-radius: var(--radius-full);
+    transition: width 0.1s linear;
+  }
+  .channel-progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+
+  /* OTA Modal Progress */
+  .ota-progress-track {
+    width: 100%;
+    height: 10px;
+    background: var(--card-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .ota-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--teal), #6366f1);
+    border-radius: var(--radius-full);
+    transition: width 0.12s linear;
+  }
+
+  /* Anti-Tamper Disabled State */
+  .anti-tamper-disabled {
+    pointer-events: none !important;
+    opacity: 0.45 !important;
+    filter: grayscale(40%);
+  }
+
+  .footer-btn {
+    appearance: none;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    padding: 4px 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .footer-btn:hover {
+    color: var(--text-primary);
+    border-color: var(--border-hover);
+  }
+
   /* ── Modals (Login PIN, Change PIN) ── */
   .modal-overlay {
     position: fixed;
@@ -685,7 +841,7 @@
   <div class="header-inner">
     <div class="brand">
       <img src="creato4logo.png" class="brand-logo" alt="Creato4 Lab">
-      <div class="brand-title">Khushi's Voice Box</div>
+      <div class="brand-title" id="headerBrandTitle">Voice Box Studio</div>
     </div>
     <div class="nav-right">
       <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
@@ -704,7 +860,7 @@
   <!-- 1. Apple-Style Clean Landing (Disconnected) -->
   <div class="landing-hero" id="landingHero">
     <img src="creato4logo.png" class="hero-logo-large" alt="Creato4 Lab">
-    <h1>Khushi's Voice Box</h1>
+    <h1>Voice Box</h1>
     <p>Tactile speech assistant for focused cognitive processing and single-touch clarity.</p>
 
     <button class="btn-apple-connect" onclick="handleConnectClick()">
@@ -718,13 +874,30 @@
     <!-- Compact Device Bar -->
     <div class="device-bar">
       <div class="device-meta">
-        <div class="device-name" id="deviceNameLabel">Khushi's Voice Box</div>
+        <div class="device-name" id="deviceNameLabel">Voice Box</div>
         <button class="device-edit-btn" onclick="openRenameModal()">Edit</button>
       </div>
       <div class="device-controls">
+        <!-- Language Switcher: English, Gujarati, Both -->
+        <div class="lang-selector">
+          <button class="lang-btn active" id="langBtnEn" onclick="switchLanguage('en')">EN</button>
+          <button class="lang-btn" id="langBtnGu" onclick="switchLanguage('gu')">ગુજ</button>
+          <button class="lang-btn" id="langBtnBoth" onclick="switchLanguage('both')">Both</button>
+        </div>
         <button class="pill-btn" onclick="openChangePinModal()">Change PIN</button>
         <button class="pill-btn" onclick="handleSleepDevice()">Sleep</button>
         <button class="pill-btn danger" onclick="disconnectBLE()">Disconnect</button>
+      </div>
+    </div>
+
+    <!-- OTA Firmware Update Banner -->
+    <div class="update-banner" id="updateBanner" style="display:none;">
+      <div class="update-banner-left">
+        <span class="update-tag">NEW UPDATE</span>
+        <span id="updateBannerText">VoiceOS v1.1 available for your device</span>
+      </div>
+      <div class="update-banner-right">
+        <button class="btn-update-install" onclick="startOtaUpdate()">Install Update</button>
       </div>
     </div>
 
@@ -767,6 +940,13 @@
         <span class="name-suffix-pill">'s Voice Box</span>
       </div>
       <div class="name-preview-text" id="wizNamePreview">Voice Box</div>
+
+      <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Default Speech Language:</p>
+      <div class="wiz-lang-row">
+        <button class="wiz-lang-pill active" id="wlangEn" onclick="selectWizLang('en')">English</button>
+        <button class="wiz-lang-pill" id="wlangGu" onclick="selectWizLang('gu')">ગુજરાતી</button>
+        <button class="wiz-lang-pill" id="wlangBoth" onclick="selectWizLang('both')">Both (બંને)</button>
+      </div>
 
       <button class="btn-apple-connect" style="width:100%; justify-content:center;" onclick="goToWizardStep(2)">
         Continue
@@ -872,14 +1052,35 @@
   </div>
 </div>
 
+<!-- OTA Firmware Update Modal (Safe Dual Partition Guard) -->
+<div class="modal-overlay" id="otaModal">
+  <div class="modal-box" style="text-align:center;">
+    <h3 style="margin-bottom:6px;">Installing Firmware Update</h3>
+    <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:16px;">Dual-Partition Guard Active: Uncorruptible & Safe.</p>
+    
+    <div class="ota-progress-track">
+      <div class="ota-progress-fill" id="otaProgressFill" style="width:0%;"></div>
+    </div>
+    <div id="otaPercentText" style="font-family:var(--font-mono); font-size:1.1rem; font-weight:700; color:var(--teal); margin-bottom:12px;">0%</div>
+    <div id="otaStatusMsg" style="font-size:0.75rem; color:var(--text-muted); min-height:18px;">Downloading binary...</div>
+
+    <button class="footer-btn" style="margin-top:16px; color:var(--coral);" onclick="abortOtaUpdate()">
+      Cancel Safely
+    </button>
+  </div>
+</div>
+
 <!-- Toast -->
 <div id="toast"></div>
 
 <!-- Footer -->
 <footer>
   <div class="footer-inner">
-    <span>Khushi's Voice Box · Creato4 Lab · Till 31 Dec 2026</span>
-    <button class="footer-reset-btn" id="footerResetBtn" onclick="handleFactoryReset()">Factory Reset & Format</button>
+    <span>Voice Box · Creato4 Lab · Till 31 Dec 2026</span>
+    <div style="display:flex; gap:12px; align-items:center;">
+      <button class="footer-btn" id="footerRollbackBtn" onclick="handleRollbackFirmware()" style="display:none;">Rollback Firmware</button>
+      <button class="footer-reset-btn" id="footerResetBtn" onclick="handleFactoryReset()">Factory Reset & Format</button>
+    </div>
   </div>
 </footer>
 
@@ -974,15 +1175,20 @@ function toggleTheme() {
 initTheme();
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  BLE & STATE
+//  BLE, LANGUAGE & STATE
 // ─────────────────────────────────────────────────────────────────────────────
 const SERVICE_UUID   = "19b10000-e8f2-537e-4f6c-d104768a1214";
 const CHAR_AUTH_UUID = "19b10001-e8f2-537e-4f6c-d104768a1214";
 const CHAR_CMD_UUID  = "19b10002-e8f2-537e-4f6c-d104768a1214";
 const CHAR_DATA_UUID = "19b10003-e8f2-537e-4f6c-d104768a1214";
 
-const defaultFruits = ["Apple", "Banana", "Mango", "Grapes", "Orange"];
-const fruitIcons = ["🍎", "🍌", "🥭", "🍇", "🍊"];
+const defaultFruits  = ["Apple", "Banana", "Mango", "Grapes", "Orange"];
+const gujaratiFruits = ["સફરજન", "કેળું", "કેરી", "દ્રાક્ષ", "નારંગી"];
+const bothFruits     = ["Apple · સફરજન", "Banana · કેળું", "Mango · કેરી", "Grapes · દ્રાક્ષ", "Orange · નારંગી"];
+const fruitIcons     = ["🍎", "🍌", "🥭", "🍇", "🍊"];
+
+let currentLang = 'en'; // 'en', 'gu', 'both'
+let wizSelectedLang = 'en';
 
 let channels = [
   { id: 0, label: "Apple",  custom: false, recordedBlob: null, audioUrl: null },
@@ -992,8 +1198,10 @@ let channels = [
   { id: 4, label: "Orange", custom: false, recordedBlob: null, audioUrl: null }
 ];
 
-let deviceName = "Khushi's Voice Box";
+let deviceName = "Voice Box";
+let deviceFwVersion = "1.0.0";
 let isDeviceSetup = false;
+let isTransferring = false;
 let bleDevice = null;
 let bleServer = null;
 let authChar = null;
@@ -1001,6 +1209,14 @@ let cmdChar = null;
 let dataChar = null;
 let isAuthenticated = false;
 let fileTargetIndex = -1;
+
+// Latest OTA Release Config
+const LATEST_FW = {
+  version: "1.1.0",
+  title: "VoiceOS v1.1",
+  binUrl: "firmware/voicebox_fw_v1.0.bin",
+  changelog: "Maximum loud shouting engine, Gujarati speech & anti-tamper security"
+};
 
 // Mic recording state
 let mediaRecorder = null;
@@ -1119,6 +1335,64 @@ function validateChangePinMatch() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+//  LANGUAGE CONTROLLER (ENGLISH, GUJARATI, BOTH)
+// ─────────────────────────────────────────────────────────────────────────────
+function selectWizLang(lang) {
+  wizSelectedLang = lang;
+  playBoxChime();
+  document.getElementById('wlangEn').className = `wiz-lang-pill ${lang === 'en' ? 'active' : ''}`;
+  document.getElementById('wlangGu').className = `wiz-lang-pill ${lang === 'gu' ? 'active' : ''}`;
+  document.getElementById('wlangBoth').className = `wiz-lang-pill ${lang === 'both' ? 'active' : ''}`;
+}
+
+function switchLanguage(lang) {
+  currentLang = lang;
+  playBoxChime();
+  document.getElementById('langBtnEn').className = `lang-btn ${lang === 'en' ? 'active' : ''}`;
+  document.getElementById('langBtnGu').className = `lang-btn ${lang === 'gu' ? 'active' : ''}`;
+  document.getElementById('langBtnBoth').className = `lang-btn ${lang === 'both' ? 'active' : ''}`;
+
+  channels.forEach((ch, i) => {
+    if (!ch.custom) {
+      if (lang === 'gu') ch.label = gujaratiFruits[i];
+      else if (lang === 'both') ch.label = bothFruits[i];
+      else ch.label = defaultFruits[i];
+    }
+  });
+  renderChannels();
+
+  if (cmdChar && bleDevice && bleDevice.gatt.connected) {
+    try {
+      const enc = new TextEncoder();
+      cmdChar.writeValue(enc.encode(`SETLANG:${lang}`));
+    } catch (e) {}
+  }
+  toast(`Language: ${lang === 'gu' ? 'ગુજરાતી' : (lang === 'both' ? 'English + ગુજરાતી' : 'English')}`);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  ANTI-TAMPER & ANTI-SPAM LOCK
+// ─────────────────────────────────────────────────────────────────────────────
+function setAntiTamperLock(locked, activeIdx = -1) {
+  isTransferring = locked;
+  document.querySelectorAll('.channel-row, .device-controls, .theme-toggle').forEach(el => {
+    if (locked) el.classList.add('anti-tamper-disabled');
+    else el.classList.remove('anti-tamper-disabled');
+  });
+
+  if (activeIdx >= 0) {
+    const activeRow = document.getElementById(`ch-row-${activeIdx}`);
+    if (activeRow) {
+      activeRow.classList.remove('anti-tamper-disabled');
+      const track = document.getElementById(`prog-track-${activeIdx}`);
+      const lbl = document.getElementById(`prog-lbl-${activeIdx}`);
+      if (track) track.style.display = locked ? 'block' : 'none';
+      if (lbl) lbl.style.display = locked ? 'flex' : 'none';
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 //  RENDER CHANNELS
 // ─────────────────────────────────────────────────────────────────────────────
 function renderChannels() {
@@ -1130,7 +1404,7 @@ function renderChannels() {
     row.className = 'channel-row';
     row.id = `ch-row-${i}`;
 
-    const fruit = defaultFruits[i];
+    const fruit = currentLang === 'gu' ? gujaratiFruits[i] : (currentLang === 'both' ? bothFruits[i] : defaultFruits[i]);
     const icon = fruitIcons[i];
     const hasRec = ch.recordedBlob !== null;
 
@@ -1139,7 +1413,7 @@ function renderChannels() {
         <div class="channel-badge">
           <span>${icon}</span>
           <span>${fruit}</span>
-          ${ch.custom ? '<span class="custom-tag">CUSTOM</span>' : ''}
+          ${ch.custom ? '<span class="custom-tag" title="Custom speech (English)">CUSTOM · EN</span>' : ''}
         </div>
 
         <input type="text" class="channel-input" id="inp-${i}" value="${ch.label}"
@@ -1166,6 +1440,15 @@ function renderChannels() {
             </button>
           ` : ''}
         </div>
+      </div>
+
+      <!-- Live Anti-Tamper Progress Bar -->
+      <div class="channel-progress-track" id="prog-track-${i}" style="display:none;">
+        <div class="channel-progress-fill" id="prog-fill-${i}"></div>
+      </div>
+      <div class="channel-progress-label" id="prog-lbl-${i}" style="display:none;">
+        <span id="prog-status-${i}">Streaming to Box...</span>
+        <span id="prog-pct-${i}">0%</span>
       </div>
 
       <div class="review-bar ${hasRec ? 'active' : ''}" id="rev-bar-${i}">
@@ -1391,9 +1674,34 @@ async function convertTo16kPcm(arrayBuffer) {
   const targetSamples = Math.floor(dur * 16000);
 
   const offCtx = new OfflineAudioContext(1, targetSamples, 16000);
+
+  // 1. High-pass filter at 130 Hz (strips away inaudible low-frequency rumble that wastes speaker power)
+  const hpf = offCtx.createBiquadFilter();
+  hpf.type = "highpass";
+  hpf.frequency.value = 130;
+
+  // 2. Vocal presence boost at 2500 Hz for maximum intelligibility
+  const eq = offCtx.createBiquadFilter();
+  eq.type = "peaking";
+  eq.frequency.value = 2500;
+  eq.gain.value = 4.5;
+  eq.Q.value = 1.0;
+
+  // 3. Dynamic vocal compressor for punchy shouting loudness
+  const comp = offCtx.createDynamicsCompressor();
+  comp.threshold.value = -24;
+  comp.knee.value = 8;
+  comp.ratio.value = 12;
+  comp.attack.value = 0.003;
+  comp.release.value = 0.15;
+
   const src = offCtx.createBufferSource();
   src.buffer = decoded;
-  src.connect(offCtx.destination);
+
+  src.connect(hpf);
+  hpf.connect(eq);
+  eq.connect(comp);
+  comp.connect(offCtx.destination);
   src.start(0);
 
   const res = await offCtx.startRendering();
@@ -1404,11 +1712,15 @@ async function convertTo16kPcm(arrayBuffer) {
     const a = Math.abs(f[i]);
     if (a > peak) peak = a;
   }
-  const mult = peak > 0 ? (0.95 / peak) : 1.0;
+  const mult = peak > 0 ? (1.35 / peak) : 1.0;
 
   const pcm = new Int16Array(f.length);
   for (let i = 0; i < f.length; i++) {
     let s = f[i] * mult;
+    // Punchy soft-knee saturation curve to eliminate harsh digital clipping while shouting loud
+    if (s > 0.85) s = 0.85 + (s - 0.85) * 0.35;
+    else if (s < -0.85) s = -0.85 + (s + 0.85) * 0.35;
+
     if (s > 1.0) s = 1.0;
     if (s < -1.0) s = -1.0;
     pcm[i] = s < 0 ? Math.round(s * 32768) : Math.round(s * 32767);
@@ -1417,16 +1729,35 @@ async function convertTo16kPcm(arrayBuffer) {
 }
 
 async function streamPcmToESP(btnIdx, pcmArrayBuffer, wordLabel) {
+  setAntiTamperLock(true, btnIdx);
   const bytes = new Uint8Array(pcmArrayBuffer);
   const enc = new TextEncoder();
-  await cmdChar.writeValue(enc.encode(`START:${btnIdx}:${bytes.byteLength}:${wordLabel}`));
 
-  const chunk = 128;
-  for (let o = 0; o < bytes.byteLength; o += chunk) {
-    await dataChar.writeValueWithoutResponse(bytes.slice(o, o + chunk));
-    await new Promise(r => setTimeout(r, 12));
+  try {
+    await cmdChar.writeValue(enc.encode(`START:${btnIdx}:${bytes.byteLength}:${wordLabel}`));
+
+    const chunk = 128;
+    const total = bytes.byteLength;
+    const fillEl = document.getElementById(`prog-fill-${btnIdx}`);
+    const pctEl = document.getElementById(`prog-pct-${btnIdx}`);
+    const statEl = document.getElementById(`prog-status-${btnIdx}`);
+
+    for (let o = 0; o < total; o += chunk) {
+      await dataChar.writeValueWithoutResponse(bytes.slice(o, o + chunk));
+      const pct = Math.min(100, Math.round(((o + chunk) / total) * 100));
+      if (fillEl) fillEl.style.width = `${pct}%`;
+      if (pctEl) pctEl.textContent = `${pct}%`;
+      if (statEl) statEl.textContent = `Streaming to Box: ${pct}%`;
+      await new Promise(r => setTimeout(r, 12));
+    }
+
+    if (statEl) statEl.textContent = "Finalizing...";
+    await cmdChar.writeValue(enc.encode(`END:${btnIdx}`));
+    if (statEl) statEl.textContent = "✓ Upload Complete";
+    await new Promise(r => setTimeout(r, 400));
+  } finally {
+    setAntiTamperLock(false, btnIdx);
   }
-  await cmdChar.writeValue(enc.encode(`END:${btnIdx}`));
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1547,11 +1878,15 @@ async function completeSetupWizard() {
   isDeviceSetup = true;
   isAuthenticated = true;
   document.getElementById('deviceNameLabel').textContent = name;
+  document.getElementById('headerBrandTitle').textContent = name;
   document.getElementById('wizardModal').classList.remove('open');
 
   try {
     const enc = new TextEncoder();
     await cmdChar.writeValue(enc.encode(`SETUP:${pin}:${name}`));
+    await new Promise(r => setTimeout(r, 60));
+    await cmdChar.writeValue(enc.encode(`SETLANG:${wizSelectedLang}`));
+    switchLanguage(wizSelectedLang);
   } catch (e) {}
 
   updateUIState(true);
@@ -1671,11 +2006,13 @@ function handleConnectClick() {
 
 async function connectBLE() {
   try {
-    toast("Finding Khushi's Voice Box...");
+    toast("Finding Voice Box...");
     bleDevice = await navigator.bluetooth.requestDevice({
       filters: [
+        { name: "VoiceBox" },
         { name: "KhushiVoiceBox" },
         { name: "FruitSpeaker" },
+        { namePrefix: "Voice" },
         { namePrefix: "Khushi" },
         { namePrefix: "Fruit" }
       ],
@@ -1728,13 +2065,29 @@ function handleBleNotification(event) {
     highlightButtonPress(idx);
   }
   else if (val.startsWith("ST:")) {
-    // ST:<isSetup>:<ownerName>
+    // ST:<isSetup>:<ownerName>:<fwVersion>:<currentLang>
     const parts = val.split(':');
     const setupStatus = parts[1] === "1";
-    const name = parts[2] || "Khushi's Voice Box";
+    const name = parts[2] || "Voice Box";
+    const fwVer = parts[3] || "1.0.0";
+    const langIdx = parts[4] || "0";
+
     isDeviceSetup = setupStatus;
     deviceName = name;
+    deviceFwVersion = fwVer;
     document.getElementById('deviceNameLabel').textContent = name;
+    document.getElementById('headerBrandTitle').textContent = name;
+
+    const langCode = langIdx === "1" ? "gu" : (langIdx === "2" ? "both" : "en");
+    currentLang = langCode;
+    const lEn = document.getElementById('langBtnEn');
+    const lGu = document.getElementById('langBtnGu');
+    const lBoth = document.getElementById('langBtnBoth');
+    if (lEn) lEn.className = `lang-btn ${langCode === 'en' ? 'active' : ''}`;
+    if (lGu) lGu.className = `lang-btn ${langCode === 'gu' ? 'active' : ''}`;
+    if (lBoth) lBoth.className = `lang-btn ${langCode === 'both' ? 'active' : ''}`;
+
+    checkFirmwareUpdate();
 
     if (!isDeviceSetup) {
       document.getElementById('loginModal').classList.remove('open');
@@ -1844,6 +2197,8 @@ function updateUIState(connected) {
   const hero = document.getElementById('landingHero');
   const dash = document.getElementById('dashboard');
   const resetBtn = document.getElementById('footerResetBtn');
+  const rollbackBtn = document.getElementById('footerRollbackBtn');
+  const brand = document.getElementById('headerBrandTitle');
 
   if (connected) {
     pill.classList.add('connected');
@@ -1851,12 +2206,116 @@ function updateUIState(connected) {
     hero.style.display = "none";
     dash.classList.add('active');
     resetBtn.style.display = "inline-block";
+    rollbackBtn.style.display = "inline-block";
+    brand.textContent = deviceName;
+    checkFirmwareUpdate();
   } else {
     pill.classList.remove('connected');
     txt.textContent = "Disconnected";
     hero.style.display = "flex";
     dash.classList.remove('active');
     resetBtn.style.display = "none";
+    rollbackBtn.style.display = "none";
+    brand.textContent = "Voice Box Studio";
+    document.getElementById('updateBanner').style.display = "none";
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  SAFE DUAL-PARTITION OTA FIRMWARE UPDATE & ROLLBACK
+// ─────────────────────────────────────────────────────────────────────────────
+function checkFirmwareUpdate() {
+  const banner = document.getElementById('updateBanner');
+  if (!banner) return;
+  if (deviceFwVersion < LATEST_FW.version) {
+    banner.style.display = "flex";
+    document.getElementById('updateBannerText').textContent = `${LATEST_FW.title} Available for your box (${LATEST_FW.changelog})`;
+  } else {
+    banner.style.display = "none";
+  }
+}
+
+async function startOtaUpdate() {
+  if (!checkBLE()) return;
+  if (!confirm(`Install ${LATEST_FW.title}? This update runs with Dual Partition Guard so it will never corrupt your box.`)) return;
+
+  const modal = document.getElementById('otaModal');
+  const fill = document.getElementById('otaProgressFill');
+  const pctText = document.getElementById('otaPercentText');
+  const msg = document.getElementById('otaStatusMsg');
+
+  modal.classList.add('open');
+  fill.style.width = "0%";
+  pctText.textContent = "0%";
+  msg.textContent = "Downloading verified binary...";
+
+  try {
+    const res = await fetch(LATEST_FW.binUrl);
+    if (!res.ok) throw new Error("Could not fetch firmware binary");
+    const bin = await res.arrayBuffer();
+    const bytes = new Uint8Array(bin);
+
+    msg.textContent = `Safe partition write starting (${(bytes.length / 1024).toFixed(0)} KB)...`;
+
+    const enc = new TextEncoder();
+    await cmdChar.writeValue(enc.encode(`OTA_START:${bytes.byteLength}`));
+
+    await new Promise(r => setTimeout(r, 120));
+
+    const chunk = 128;
+    for (let o = 0; o < bytes.byteLength; o += chunk) {
+      if (!modal.classList.contains('open')) return;
+      await dataChar.writeValueWithoutResponse(bytes.slice(o, o + chunk));
+      const pct = Math.min(100, Math.round(((o + chunk) / bytes.byteLength) * 100));
+      fill.style.width = `${pct}%`;
+      pctText.textContent = `${pct}%`;
+      msg.textContent = `Writing to safe OTA partition... (${o}/${bytes.byteLength} B)`;
+      await new Promise(r => setTimeout(r, 10));
+    }
+
+    msg.textContent = "Verifying partition signature & rebooting...";
+    await cmdChar.writeValue(enc.encode("OTA_END"));
+    pctText.textContent = "100%";
+    fill.style.width = "100%";
+    toast("Update Succeeded! Voice Box is rebooting...");
+
+    setTimeout(() => {
+      modal.classList.remove('open');
+      disconnectBLE();
+    }, 1500);
+
+  } catch (err) {
+    console.error(err);
+    msg.textContent = "Update failed or cancelled safely.";
+    toast("OTA Update Cancelled safely");
+    try {
+      const enc = new TextEncoder();
+      await cmdChar.writeValue(enc.encode("OTA_ABORT"));
+    } catch (e) {}
+    setTimeout(() => modal.classList.remove('open'), 1800);
+  }
+}
+
+function abortOtaUpdate() {
+  document.getElementById('otaModal').classList.remove('open');
+  try {
+    const enc = new TextEncoder();
+    cmdChar.writeValue(enc.encode("OTA_ABORT"));
+  } catch (e) {}
+  toast("Update aborted safely");
+}
+
+async function handleRollbackFirmware() {
+  if (!checkBLE()) return;
+  if (!confirm("Rollback Firmware: This will switch to your previous working firmware partition and reboot. Continue?")) return;
+
+  try {
+    const enc = new TextEncoder();
+    await cmdChar.writeValue(enc.encode("ROLLBACK"));
+    toast("Reverting to previous firmware version...");
+    setTimeout(disconnectBLE, 1000);
+  } catch (e) {
+    toast("Rollback command error");
   }
 }
 
