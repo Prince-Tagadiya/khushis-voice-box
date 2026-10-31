@@ -711,7 +711,7 @@
     <div id="wizardStep1">
       <h3>Name Your Voice Box</h3>
       <p>Give your voice box a personal name.</p>
-      <input type="text" id="wizNameInput" class="channel-input" style="text-align:center; font-size:1.1rem; margin-bottom:24px;" value="Khushi's Voice Box" maxlength="24">
+      <input type="text" id="wizNameInput" class="channel-input" style="text-align:center; font-size:1.1rem; margin-bottom:24px;" placeholder="Name your voice box" value="" maxlength="24">
       <button class="btn-apple-connect" style="width:100%; justify-content:center;" onclick="goToWizardStep(2)">
         Continue
       </button>
@@ -722,7 +722,7 @@
       <h3>Create Security PIN</h3>
       <p>Choose a 4-digit PIN to protect your box.</p>
       <div class="pin-row" id="wizPin1">
-        <input type="password" inputmode="numeric" class="pin-box" maxlength="1" autofocus>
+        <input type="password" inputmode="numeric" class="pin-box" maxlength="1">
         <input type="password" inputmode="numeric" class="pin-box" maxlength="1">
         <input type="password" inputmode="numeric" class="pin-box" maxlength="1">
         <input type="password" inputmode="numeric" class="pin-box" maxlength="1">
@@ -743,11 +743,13 @@
     <!-- Step 3: Hardware Test -->
     <div id="wizardStep3" style="display:none;">
       <h3>Hardware Check</h3>
-      <p>Press any physical button on your box right now.</p>
+      <p>Press any physical button on your box to test.</p>
       <div class="wizard-test-btn" id="wizTestBox">Waiting for physical button press...</div>
-      <button class="btn-apple-connect" id="btnFinishWiz" style="width:100%; justify-content:center;" onclick="completeSetupWizard()" disabled>
-        Open Studio
-      </button>
+      <div style="display:flex; gap:10px; margin-top:20px;">
+        <button class="btn-apple-connect" id="btnFinishWiz" style="width:100%; justify-content:center;" onclick="completeSetupWizard()">
+          Continue to Studio →
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -1159,11 +1161,13 @@ function highlightButtonPress(btnIdx) {
 
   const testBox = document.getElementById('wizTestBox');
   const btnFinish = document.getElementById('btnFinishWiz');
-  if (testBox && btnFinish && document.getElementById('wizardStep3').style.display !== 'none') {
+  if (testBox && document.getElementById('wizardStep3').style.display !== 'none') {
     testBox.textContent = `✓ Detected: Button ${btnIdx + 1} (${channels[btnIdx].label || defaultFruits[btnIdx]})`;
     testBox.classList.add('verified');
-    btnFinish.disabled = false;
-    playUiSound('success');
+    if (btnFinish) btnFinish.textContent = "✓ Verified! Entering Studio...";
+    setTimeout(() => {
+      completeSetupWizard();
+    }, 700);
   }
 }
 
@@ -1406,13 +1410,22 @@ document.getElementById('filePicker').addEventListener('change', async (e) => {
 // ─────────────────────────────────────────────────────────────────────────────
 //  SETUP WIZARD
 // ─────────────────────────────────────────────────────────────────────────────
+async function playBoxChime() {
+  if (cmdChar && bleDevice && bleDevice.gatt.connected) {
+    try {
+      const enc = new TextEncoder();
+      await cmdChar.writeValue(enc.encode("CHIME"));
+    } catch (e) {}
+  }
+}
+
 function launchSetupWizard() {
   document.getElementById('wizardModal').classList.add('open');
   goToWizardStep(1);
 }
 
 function goToWizardStep(step) {
-  playUiSound('tap');
+  playBoxChime();
   document.getElementById('wizardStep1').style.display = step === 1 ? 'block' : 'none';
   document.getElementById('wizardStep2').style.display = step === 2 ? 'block' : 'none';
   document.getElementById('wizardStep3').style.display = step === 3 ? 'block' : 'none';
@@ -1422,13 +1435,17 @@ function goToWizardStep(step) {
   document.getElementById('dot3').className = `wizard-dot ${step === 3 ? 'active' : ''}`;
 
   if (step === 2) {
-    clearPinBoxes('wizPin1');
     clearPinBoxes('wizPin2');
+    clearPinBoxes('wizPin1');
+    setTimeout(() => {
+      const first = document.querySelector('#wizPin1 .pin-box');
+      if (first) first.focus();
+    }, 60);
   }
 }
 
 async function completeSetupWizard() {
-  const name = document.getElementById('wizNameInput').value.trim() || "Khushi's Voice Box";
+  const name = document.getElementById('wizNameInput').value.trim() || "My Voice Box";
   const pin = getPinValue('wizPin1') || "1234";
 
   deviceName = name;
@@ -1442,7 +1459,6 @@ async function completeSetupWizard() {
     await cmdChar.writeValue(enc.encode(`SETUP:${pin}:${name}`));
   } catch (e) {}
 
-  playUiSound('login');
   updateUIState(true);
   toast(`Welcome to ${name}!`);
 }
@@ -1709,7 +1725,7 @@ async function submitLoginPin() {
     if (authSuccess || pin === "1234") {
       isAuthenticated = true;
       closeLoginModal();
-      playUiSound('login');
+      playBoxChime();
       updateUIState(true);
       toast(`Connected to ${deviceName}`);
       return;
@@ -1721,7 +1737,7 @@ async function submitLoginPin() {
     console.error(e);
     isAuthenticated = true;
     closeLoginModal();
-    playUiSound('login');
+    playBoxChime();
     updateUIState(true);
     toast(`Connected to ${deviceName}`);
   }
