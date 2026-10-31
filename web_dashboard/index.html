@@ -544,6 +544,56 @@
     color: var(--teal);
   }
 
+  /* Front-Name Input with Non-Editable Suffix */
+  .name-input-group {
+    display: flex;
+    align-items: center;
+    background: var(--card-subtle);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 6px 14px;
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+  }
+  .name-input-group:focus-within {
+    background: var(--card);
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+  }
+  .name-prefix-input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: var(--font);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: right;
+    padding: 8px 4px;
+  }
+  .name-prefix-input::placeholder {
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .name-suffix-pill {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    padding: 8px 6px;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .name-preview-text {
+    font-size: 0.8rem;
+    color: var(--teal);
+    font-weight: 600;
+    min-height: 20px;
+    margin-bottom: 18px;
+    letter-spacing: -0.01em;
+  }
+
   /* ── Modals (Login PIN, Change PIN) ── */
   .modal-overlay {
     position: fixed;
@@ -710,8 +760,14 @@
     <!-- Step 1: Device Name -->
     <div id="wizardStep1">
       <h3>Name Your Voice Box</h3>
-      <p>Give your voice box a personal name.</p>
-      <input type="text" id="wizNameInput" class="channel-input" style="text-align:center; font-size:1.1rem; margin-bottom:24px;" placeholder="Name your voice box" value="" maxlength="24">
+      <p>Enter the front name for your box.</p>
+      
+      <div class="name-input-group">
+        <input type="text" id="wizFirstName" class="name-prefix-input" placeholder="e.g. Prince" maxlength="20" autofocus oninput="updateWizNamePreview()">
+        <span class="name-suffix-pill">'s Voice Box</span>
+      </div>
+      <div class="name-preview-text" id="wizNamePreview">Voice Box</div>
+
       <button class="btn-apple-connect" style="width:100%; justify-content:center;" onclick="goToWizardStep(2)">
         Continue
       </button>
@@ -1419,7 +1475,40 @@ async function playBoxChime() {
   }
 }
 
+function updateWizNamePreview() {
+  const input = document.getElementById('wizFirstName');
+  const raw = (input ? input.value : '').trim();
+  const preview = document.getElementById('wizNamePreview');
+  if (!preview) return;
+
+  if (!raw) {
+    preview.textContent = "Voice Box";
+    return;
+  }
+  const full = raw.endsWith("'s") || raw.endsWith("’s")
+    ? `${raw} Voice Box`
+    : raw.endsWith("s") || raw.endsWith("S")
+      ? `${raw}' Voice Box`
+      : `${raw}'s Voice Box`;
+  preview.textContent = full;
+}
+
+function getWizardFullName() {
+  const input = document.getElementById('wizFirstName');
+  const raw = (input ? input.value : '').trim();
+  if (!raw) return "Voice Box";
+  if (raw.toLowerCase().includes("voice box")) return raw;
+  return raw.endsWith("'s") || raw.endsWith("’s")
+    ? `${raw} Voice Box`
+    : raw.endsWith("s") || raw.endsWith("S")
+      ? `${raw}' Voice Box`
+      : `${raw}'s Voice Box`;
+}
+
 function launchSetupWizard() {
+  const fName = document.getElementById('wizFirstName');
+  if (fName) fName.value = '';
+  updateWizNamePreview();
   document.getElementById('wizardModal').classList.add('open');
   goToWizardStep(1);
 }
@@ -1434,7 +1523,13 @@ function goToWizardStep(step) {
   document.getElementById('dot2').className = `wizard-dot ${step === 2 ? 'active' : ''}`;
   document.getElementById('dot3').className = `wizard-dot ${step === 3 ? 'active' : ''}`;
 
-  if (step === 2) {
+  if (step === 1) {
+    setTimeout(() => {
+      const fName = document.getElementById('wizFirstName');
+      if (fName) fName.focus();
+    }, 60);
+  }
+  else if (step === 2) {
     clearPinBoxes('wizPin2');
     clearPinBoxes('wizPin1');
     setTimeout(() => {
@@ -1445,7 +1540,7 @@ function goToWizardStep(step) {
 }
 
 async function completeSetupWizard() {
-  const name = document.getElementById('wizNameInput').value.trim() || "My Voice Box";
+  const name = getWizardFullName();
   const pin = getPinValue('wizPin1') || "1234";
 
   deviceName = name;
