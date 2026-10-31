@@ -937,10 +937,8 @@
           <button class="lang-btn" id="langBtnGu" onclick="switchLanguage('gu')">ગુજ</button>
           <button class="lang-btn" id="langBtnBoth" onclick="switchLanguage('both')">Both</button>
         </div>
-        <!-- Cognitive Processing Delay & Caregiver Badges -->
-        <button class="pill-btn" id="btnCogDelay" onclick="cycleCogDelay()" title="Cognitive Processing Anti-Spam Latch">⏱️ 1.2s Pacing</button>
-        <button class="pill-btn" onclick="downloadDynamicCaregiverCard()" title="Download Caregiver PIN Card with Real PIN">🎴 PIN Card</button>
-        <button class="pill-btn" onclick="downloadDynamicInstagramStory()" title="Download Minimalist Instagram Story">📱 Story</button>
+        <button class="pill-btn" onclick="openCardPreview('pincard')" title="Preview and Download Caregiver PIN Card with Real PIN">🎴 PIN Card</button>
+        <button class="pill-btn" onclick="openCardPreview('story')" title="Preview and Download Minimalist Instagram Story">📱 Story</button>
         <button class="pill-btn" onclick="openChangePinModal()">Change PIN</button>
         <button class="pill-btn" onclick="handleSleepDevice()">Sleep</button>
         <button class="pill-btn danger" onclick="disconnectBLE()">Disconnect</button>
@@ -1005,17 +1003,10 @@
       <div class="name-preview-text" id="wizNamePreview">Voice Box</div>
 
       <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Default Speech Language:</p>
-      <div class="wiz-lang-row">
+      <div class="wiz-lang-row" style="margin-bottom:24px;">
         <button class="wiz-lang-pill active" id="wlangEn" onclick="selectWizLang('en')">English</button>
         <button class="wiz-lang-pill" id="wlangGu" onclick="selectWizLang('gu')">ગુજરાતી</button>
         <button class="wiz-lang-pill" id="wlangBoth" onclick="selectWizLang('both')">Both (બંને)</button>
-      </div>
-
-      <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px; margin-top:14px;">Cognitive Processing Delay (Anti-Spam Latch):</p>
-      <div class="wiz-lang-row" style="margin-bottom:20px;">
-        <button class="wiz-lang-pill" id="wcogFast" onclick="selectWizCogDelay(500)">0.5s Fast</button>
-        <button class="wiz-lang-pill active" id="wcogStandard" onclick="selectWizCogDelay(1200)">1.2s Calm</button>
-        <button class="wiz-lang-pill" id="wcogPaced" onclick="selectWizCogDelay(2000)">2.0s Paced</button>
       </div>
 
       <button class="btn-apple-connect" style="width:100%; justify-content:center;" onclick="goToWizardStep(2)">
@@ -1062,9 +1053,31 @@
         </button>
       </div>
       <div style="display:flex; gap:10px; margin-top:10px;">
-        <button type="button" class="pill-btn" onclick="downloadDynamicCaregiverCard()" style="flex:1; justify-content:center; padding:9px 12px; font-size:0.78rem;">🎴 Save Real PIN Card</button>
-        <button type="button" class="pill-btn" onclick="downloadDynamicInstagramStory()" style="flex:1; justify-content:center; padding:9px 12px; font-size:0.78rem;">📱 Save Story</button>
+        <button type="button" class="pill-btn" onclick="openCardPreview('pincard')" style="flex:1; justify-content:center; padding:9px 12px; font-size:0.78rem;">🎴 Preview PIN Card</button>
+        <button type="button" class="pill-btn" onclick="openCardPreview('story')" style="flex:1; justify-content:center; padding:9px 12px; font-size:0.78rem;">📱 Preview Story</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Live Card & Story Preview Modal -->
+<div class="modal-overlay" id="previewModal">
+  <div class="modal-box" style="max-width: 680px; width: 92%;">
+    <button class="modal-close" onclick="closePreviewModal()">×</button>
+    <h3 id="previewModalTitle" style="margin-bottom: 4px;">Live Preview</h3>
+    <p id="previewModalSubtitle" style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 14px;">Review your card before downloading.</p>
+    
+    <div style="background: var(--bg-card-subtle); border: 1px solid var(--border-color); border-radius: 14px; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 260px; max-height: 62vh; padding: 12px; margin-bottom: 16px;">
+      <img id="previewImage" src="" alt="Preview" style="max-width: 100%; max-height: 58vh; object-fit: contain; border-radius: 10px; display: block; box-shadow: 0 6px 20px rgba(0,0,0,0.35);">
+    </div>
+
+    <div style="display: flex; gap: 10px;">
+      <button class="btn-apple-connect" id="btnDownloadPreview" style="flex: 2; justify-content: center; padding: 11px 16px;">
+        ⬇️ Download PNG
+      </button>
+      <button class="pill-btn" onclick="closePreviewModal()" style="flex: 1; justify-content: center; padding: 11px 16px;">
+        Close
+      </button>
     </div>
   </div>
 </div>
@@ -1176,6 +1189,8 @@
   </div>
 </footer>
 
+<script src="fruits_audio.js"></script>
+<script src="speakGenerator.js"></script>
 <script>
 // ─────────────────────────────────────────────────────────────────────────────
 //  WEB AUDIO SYNTHESIZER (APPLE-LIKE ACOUSTIC CHIMES)
@@ -1307,7 +1322,7 @@ const LATEST_FW = {
   version: "1.2.0",
   title: "VoiceOS v1.2",
   binUrl: "firmware/voicebox_fw_v1.2.bin",
-  changelog: "Live cognitive delay preview, smooth instant button touch & Diwali gift edition"
+  changelog: "Maximum shouting volume, zero-delay instant tactile response & Gujarati speech engine"
 };
 
 // Mic recording state
@@ -1427,57 +1442,8 @@ function validateChangePinMatch() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  COGNITIVE PROCESSING DELAY & LANGUAGE CONTROLLER
+//  LANGUAGE CONTROLLER
 // ─────────────────────────────────────────────────────────────────────────────
-let cognitiveDelayMs = 1200;
-let wizSelectedCogDelay = 500;
-
-function selectWizCogDelay(delay) {
-  wizSelectedCogDelay = delay;
-  const fName = document.getElementById('wizFirstName');
-  const preservedName = fName ? fName.value : '';
-
-  document.getElementById('wcogFast').className = `wiz-lang-pill ${delay === 500 ? 'active' : ''}`;
-  document.getElementById('wcogStandard').className = `wiz-lang-pill ${delay === 1200 ? 'active' : ''}`;
-  document.getElementById('wcogPaced').className = `wiz-lang-pill ${delay === 2000 ? 'active' : ''}`;
-  playUiSound('tap');
-
-  // Trigger live acoustic preview demonstration directly from physical box!
-  if (cmdChar && bleDevice && bleDevice.gatt.connected) {
-    try {
-      const enc = new TextEncoder();
-      cmdChar.writeValue(enc.encode(`SETDELAY:${delay}`));
-      toast(`⏱️ ${(delay / 1000).toFixed(1)}s Anti-Spam Latch (Testing preview on box...)`);
-    } catch (e) {}
-  }
-
-  if (fName && preservedName && fName.value !== preservedName) {
-    fName.value = preservedName;
-    updateWizNamePreview();
-  }
-}
-
-function cycleCogDelay() {
-  playUiSound('tap');
-  if (cognitiveDelayMs === 500) cognitiveDelayMs = 1200;
-  else if (cognitiveDelayMs === 1200) cognitiveDelayMs = 2000;
-  else cognitiveDelayMs = 500;
-  updateCogDelayBtnText();
-
-  if (cmdChar && bleDevice && bleDevice.gatt.connected) {
-    try {
-      const enc = new TextEncoder();
-      cmdChar.writeValue(enc.encode(`SETDELAY:${cognitiveDelayMs}`));
-      toast(`⏱️ ${(cognitiveDelayMs / 1000).toFixed(1)}s Anti-Spam Latch (Testing pacing preview...)`);
-    } catch (e) {}
-  }
-}
-
-function updateCogDelayBtnText() {
-  const btn = document.getElementById('btnCogDelay');
-  if (btn) btn.textContent = `⏱️ ${(cognitiveDelayMs / 1000).toFixed(1)}s Pacing`;
-}
-
 function selectWizLang(lang) {
   wizSelectedLang = lang;
   const fName = document.getElementById('wizFirstName');
@@ -1487,7 +1453,7 @@ function selectWizLang(lang) {
   document.getElementById('wlangGu').className = `wiz-lang-pill ${lang === 'gu' ? 'active' : ''}`;
   document.getElementById('wlangBoth').className = `wiz-lang-pill ${lang === 'both' ? 'active' : ''}`;
 
-  // Live acoustic feedback from the box: speaks a random fruit in selected language!
+  // Live acoustic feedback from the box: speaks a sample fruit in selected language!
   if (cmdChar && bleDevice && bleDevice.gatt.connected) {
     try {
       const enc = new TextEncoder();
@@ -1502,12 +1468,19 @@ function selectWizLang(lang) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  DYNAMIC HIGH-END CARD & STORY GENERATORS (HTML5 CANVAS WITH REAL PIN)
+//  DYNAMIC HIGH-END CARD & STORY PREVIEW & GENERATION (REAL PIN + LIVE PREVIEW)
 // ─────────────────────────────────────────────────────────────────────────────
-function downloadDynamicCaregiverCard() {
+let currentPreviewBlob = null;
+let currentPreviewFilename = '';
+
+function closePreviewModal() {
+  const m = document.getElementById('previewModal');
+  if (m) m.classList.remove('open');
+}
+
+function generateCaregiverCanvas() {
   const pin = (getPinValue('wizPin1') || devicePin || '1234').padStart(4, '0').slice(0, 4);
   const rawName = getWizardFullName() || deviceName || "Voice Box";
-  const cleanName = rawName.replace(/[^a-zA-Z0-9]/g, '_');
 
   const canvas = document.createElement('canvas');
   canvas.width = 1400;
@@ -1583,7 +1556,6 @@ function downloadDynamicCaregiverCard() {
   ctx.fill();
   ctx.stroke();
 
-  // Left Box Texts
   ctx.fillStyle = '#64748B';
   ctx.font = 'bold 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
   ctx.fillText("SECURITY ACCESS PIN (CONFIDENTIAL)", boxLX + 28, boxTop + 36);
@@ -1647,11 +1619,9 @@ function downloadDynamicCaregiverCard() {
       ? 'English + ગુજરાતી Dual Speech'
       : 'English Assistive Speech';
 
-  const pacingLabel = `${(cognitiveDelayMs / 1000).toFixed(1)}s Anti-Spam Sensory Latch`;
-
   const features = [
     { title: "SPEECH VOCABULARY ENGINE", val: langLabel, desc: "Out-of-the-box native fruit vocabulary for multi-lingual clarity" },
-    { title: "COGNITIVE PACING (ANTI-SPAM)", val: pacingLabel, desc: "Protects user from rapid sensory overload and repetitive tapping" },
+    { title: "TACTILE ACCESSIBILITY", val: "5-Channel Physical Matrix", desc: "Single-touch instant audio response engineered for motor accessibility" },
     { title: "POWER ARCHITECTURE", val: "True Deep Sleep with Instant Wake", desc: "Preserves battery life indefinitely; activates on any single touch" },
     { title: "ACOUSTIC SHOUTING ENGINE", val: "16-Bit 16kHz Vocal Clarification", desc: "Acoustically calibrated loudness optimized for accessible learning" }
   ];
@@ -1682,23 +1652,11 @@ function downloadDynamicCaregiverCard() {
   ctx.fillText("Official Support Active · Till 31 Dec 2026", 1400 - pad - 36, footerY);
   ctx.textAlign = 'left';
 
-  // Download Blob
-  canvas.toBlob(blob => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${cleanName}_Caregiver_PIN_Card.png`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast("✓ Caregiver PIN Card Downloaded with Real PIN!");
-  }, 'image/png');
+  return canvas;
 }
 
-function downloadDynamicInstagramStory() {
+function generateStoryCanvas(callback) {
   const rawName = getWizardFullName() || deviceName || "Voice Box";
-  const cleanName = rawName.replace(/[^a-zA-Z0-9]/g, '_');
 
   const canvas = document.createElement('canvas');
   canvas.width = 1080;
@@ -1762,7 +1720,7 @@ function downloadDynamicInstagramStory() {
   ctx.fillStyle = '#94A3B8';
   ctx.font = '22px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
   ctx.fillText("Tactile 1-word speech assistant designed for single-touch", padX, headY + 104);
-  ctx.fillText("clarity and focused cognitive processing.", padX, headY + 134);
+  ctx.fillText("clarity and focused assistive vocal communication.", padX, headY + 134);
 
   // Product Photo Card
   const cardY = headY + 180;
@@ -1807,7 +1765,7 @@ function downloadDynamicInstagramStory() {
 
     const chips = [
       { title: "DUAL SPEECH ENGINE", val: "English + ગુજરાતી", desc: "Native fruit speech" },
-      { title: "COGNITIVE PACING", val: `${(cognitiveDelayMs / 1000).toFixed(1)}s Anti-Spam Latch`, desc: "Sensory overload guard" },
+      { title: "TACTILE CONTROL", val: "Instant Single-Touch", desc: "5 Color-coded buttons" },
       { title: "INSTANT TOUCH WAKE", val: "ESP32-C3 Super Mini", desc: "Ultra-low ~5 µA sleep" },
       { title: "ACOUSTIC TUNING", val: "16-Bit 16kHz Vocal Boost", desc: "MAX98357A I2S DAC" }
     ];
@@ -1857,18 +1815,7 @@ function downloadDynamicInstagramStory() {
     ctx.fillText("creato4lab.org", 1080 - padX, botY + 34);
     ctx.textAlign = 'left';
 
-    // Download Blob
-    canvas.toBlob(blob => {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${cleanName}_Instagram_Story.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      toast("✓ Aesthetic Instagram Story Downloaded!");
-    }, 'image/png');
+    callback(canvas);
   };
 
   const productImg = new Image();
@@ -1876,6 +1823,57 @@ function downloadDynamicInstagramStory() {
   productImg.onload = () => drawPhotoAndComplete(productImg);
   productImg.onerror = () => drawPhotoAndComplete(null);
   productImg.src = 'Voice_Box_Instagram_Story.png';
+}
+
+function openCardPreview(type) {
+  playUiSound('tap');
+  const rawName = getWizardFullName() || deviceName || "Voice Box";
+  const cleanName = rawName.replace(/[^a-zA-Z0-9]/g, '_');
+
+  const titleEl = document.getElementById('previewModalTitle');
+  const subEl = document.getElementById('previewModalSubtitle');
+  const imgEl = document.getElementById('previewImage');
+  const btnDl = document.getElementById('btnDownloadPreview');
+
+  if (type === 'pincard') {
+    titleEl.textContent = "🎴 Caregiver PIN Card";
+    subEl.textContent = "Your confidential real PIN and assistive settings are rendered below.";
+    currentPreviewFilename = `${cleanName}_Caregiver_PIN_Card.png`;
+    btnDl.textContent = "⬇️ Download PIN Card";
+
+    const canvas = generateCaregiverCanvas();
+    canvas.toBlob(blob => {
+      currentPreviewBlob = blob;
+      imgEl.src = URL.createObjectURL(blob);
+      document.getElementById('previewModal').classList.add('open');
+    }, 'image/png');
+
+  } else {
+    titleEl.textContent = "📱 Instagram Activation Story";
+    subEl.textContent = "9:16 vertical editorial unboxing story ready to share.";
+    currentPreviewFilename = `${cleanName}_Instagram_Story.png`;
+    btnDl.textContent = "⬇️ Download Story";
+
+    generateStoryCanvas(canvas => {
+      canvas.toBlob(blob => {
+        currentPreviewBlob = blob;
+        imgEl.src = URL.createObjectURL(blob);
+        document.getElementById('previewModal').classList.add('open');
+      }, 'image/png');
+    });
+  }
+
+  btnDl.onclick = () => {
+    if (!currentPreviewBlob) return;
+    const url = URL.createObjectURL(currentPreviewBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = currentPreviewFilename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    toast("✓ Downloaded successfully!");
+  };
 }
 
 function switchLanguage(lang) {
@@ -2174,43 +2172,83 @@ function previewTTS(idx) {
 
 async function sendTTS(idx) {
   if (!checkBLE()) return;
-  const text = (document.getElementById(`inp-${idx}`).value || channels[idx].label).trim();
+  const inputEl = document.getElementById(`inp-${idx}`);
+  const text = (inputEl ? inputEl.value : channels[idx].label).trim();
   if (!text) return;
 
-  toast("Generating speech...");
+  toast(`Sending "${text}" to channel 0${idx + 1}...`);
+
+  // 1. Check if it matches any standard fruit (English or Gujarati)
+  const norm = text.toLowerCase().trim();
+  let b64 = null;
+  const ef = window.EMBEDDED_FRUITS || {};
+
+  if (norm.includes('apple') || norm.includes('સફરજન') || (idx === 0 && (!norm || norm === 'apple' || norm === 'સફરજન'))) {
+    b64 = (currentLang === 'gu' || norm.includes('સફરજન')) ? (ef.safarjan || ef.apple) : ef.apple;
+  } else if (norm.includes('banana') || norm.includes('કેળ') || (idx === 1 && (!norm || norm === 'banana' || norm === 'કેળું'))) {
+    b64 = (currentLang === 'gu' || norm.includes('કેળ')) ? (ef.kelu || ef.banana) : ef.banana;
+  } else if (norm.includes('mango') || norm.includes('કેરી') || (idx === 2 && (!norm || norm === 'mango' || norm === 'કેરી'))) {
+    b64 = (currentLang === 'gu' || norm.includes('કેરી')) ? (ef.keri || ef.mango) : ef.mango;
+  } else if (norm.includes('grape') || norm.includes('દ્રાક્ષ') || (idx === 3 && (!norm || norm === 'grapes' || norm === 'દ્રાક્ષ'))) {
+    b64 = (currentLang === 'gu' || norm.includes('દ્રાક્ષ')) ? (ef.draksh || ef.grapes) : ef.grapes;
+  } else if (norm.includes('orange') || norm.includes('નારંગી') || (idx === 4 && (!norm || norm === 'orange' || norm === 'નારંગી'))) {
+    b64 = (currentLang === 'gu' || norm.includes('નારંગી')) ? (ef.narangi || ef.orange) : ef.orange;
+  }
+
   try {
-    const res = await fetch(`/api/tts?text=${encodeURIComponent(text)}`);
     let pcm = null;
-    if (res.ok) {
-      pcm = await res.arrayBuffer();
+    if (b64) {
+      // Decode pristine studio 16kHz PCM directly from offline bundle!
+      const binaryString = atob(b64);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      pcm = bytes.buffer;
     } else {
-      const post = await fetch("https://api.soundoftext.com/sounds", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ engine: "Google", data: { text, voice: "en-US" } })
-      });
-      const data = await post.json();
-      for (let i = 0; i < 8; i++) {
-        await new Promise(r => setTimeout(r, 250));
-        const st = await (await fetch(`https://api.soundoftext.com/sounds/${data.id}`)).json();
-        if (st.status === "Done") {
-          const mp3 = await (await fetch(st.location)).arrayBuffer();
-          pcm = await convertTo16kPcm(mp3);
-          break;
+      // 1. Try in-browser offline speech generator (works anywhere, zero network, zero CORS)
+      if (typeof generateSpeech === 'function') {
+        try {
+          toast(`Synthesizing "${text}" offline...`);
+          const wavBytes = generateSpeech(text, { amplitude: 100, speed: 135, pitch: 50 });
+          if (wavBytes && wavBytes.buffer) {
+            pcm = await convertTo16kPcm(wavBytes.buffer);
+          }
+        } catch (genErr) {
+          console.warn("Client-side speech synthesis warning:", genErr);
         }
+      }
+      // 2. Try local TTS endpoint if running with local server
+      if (!pcm) {
+        try {
+          const res = await fetch(`/api/tts?text=${encodeURIComponent(text)}`);
+          if (res.ok) pcm = await res.arrayBuffer();
+        } catch (e) {}
       }
     }
 
     if (pcm) {
-      toast("Sending to speaker...");
+      toast("Streaming audio to box...");
       await streamPcmToESP(idx, pcm, text);
       channels[idx].custom = true;
       renderChannels();
       playUiSound('success');
-      toast(`Channel 0${idx + 1} updated to "${text}"`);
+      toast(`✓ Channel 0${idx + 1} updated to "${text}"`);
+    } else {
+      await showCustomDialog({
+        icon: "🎙️",
+        title: "Record Custom Word",
+        desc: `To assign "<strong>${text}</strong>" to this button, tap the <strong>Record</strong> button (🎤) to capture it with your own voice, or tap <strong>📁</strong> to select an audio file.<br><br>The Send button automatically streams pristine fruit vocabulary.`,
+        actionText: "Record Now",
+        cancelText: "Cancel"
+      }).then(ok => {
+        if (ok) toggleRecord(idx);
+      });
     }
   } catch (e) {
-    toast("Speech error");
+    console.error("sendTTS error:", e);
+    toast("Upload failed");
   }
 }
 
@@ -2462,14 +2500,9 @@ async function completeSetupWizard() {
     // Save language quietly without speaking random fruit
     await cmdChar.writeValue(enc.encode(`SETLANG:${wizSelectedLang}`));
     await new Promise(r => setTimeout(r, 60));
-    // Save cognitive delay quietly
-    await cmdChar.writeValue(enc.encode(`SETDELAY:${wizSelectedCogDelay}:quiet`));
-    await new Promise(r => setTimeout(r, 60));
     // Play ONE serene calm confirmation harmony from physical speaker
     await cmdChar.writeValue(enc.encode("CHIME"));
     switchLanguage(wizSelectedLang);
-    cognitiveDelayMs = wizSelectedCogDelay;
-    updateCogDelayBtnText();
   } catch (e) {}
 
   updateUIState(true);
@@ -2725,33 +2758,17 @@ function handleBleNotification(event) {
     const idx = parseInt(val.substring(6));
     highlightButtonPress(idx);
   }
-  else if (val.startsWith("LATCH:")) {
-    const idx = parseInt(val.substring(6));
-    const pill = document.getElementById(`sbtn${idx}`);
-    if (pill) {
-      pill.style.borderColor = "var(--coral)";
-      pill.style.transform = "scale(0.95)";
-      setTimeout(() => {
-        pill.style.borderColor = "";
-        pill.style.transform = "";
-      }, 350);
-    }
-    toast(`⏱️ ${(cognitiveDelayMs / 1000).toFixed(1)}s Anti-Spam Latch`);
-  }
   else if (val.startsWith("ST:")) {
-    // ST:<isSetup>:<ownerName>:<fwVersion>:<currentLang>:<cognitiveDelayMs>
+    // ST:<isSetup>:<ownerName>:<fwVersion>:<currentLang>
     const parts = val.split(':');
     const setupStatus = parts[1] === "1";
     const name = parts[2] || "Voice Box";
     const fwVer = parts[3] || "1.0.0";
     const langIdx = parts[4] || "0";
-    const delay = parseInt(parts[5], 10) || 1200;
 
     isDeviceSetup = setupStatus;
     deviceName = name;
     deviceFwVersion = fwVer;
-    cognitiveDelayMs = delay;
-    updateCogDelayBtnText();
     document.getElementById('deviceNameLabel').textContent = name;
     document.getElementById('headerBrandTitle').textContent = name;
 
