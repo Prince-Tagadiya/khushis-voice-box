@@ -807,7 +807,7 @@
     border-color: var(--border-hover);
   }
 
-  /* ── Modals (Login PIN, Change PIN) ── */
+  /* ── Modals (Login PIN, Change PIN, Previews) ── */
   .modal-overlay {
     position: fixed;
     inset: 0;
@@ -816,10 +816,16 @@
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 400;
+    z-index: 600;
     padding: 16px;
   }
   .modal-overlay.open { display: flex; }
+  #previewModal {
+    z-index: 1200 !important;
+  }
+  #customDialogModal {
+    z-index: 1500 !important;
+  }
   .modal-box {
     background: var(--card);
     border: 1px solid var(--border);
@@ -1397,10 +1403,10 @@
             <button class="lang-btn" id="langBtnGu" onclick="switchLanguage('gu')">ગુજ</button>
             <button class="lang-btn" id="langBtnBoth" onclick="switchLanguage('both')">Both</button>
           </div>
-          <!-- Voice Engine Switcher (Default Male vs Google Female) -->
+          <!-- Voice Engine Switcher (Male vs Female) -->
           <div class="voice-selector" id="voiceSelector" title="Voice Persona (Matched Across Languages)">
-            <button class="lang-btn active" id="voiceBtnStudio" onclick="switchVoice('studio')" title="Studio Male Voice (EN &amp; GU)">🎙️ Default</button>
-            <button class="lang-btn" id="voiceBtnGoogle" onclick="switchVoice('google')" title="Google Female Voice (EN &amp; GU)">✨ Google</button>
+            <button class="lang-btn active" id="voiceBtnStudio" onclick="switchVoice('studio')" title="Male Voice">🎙️ Male</button>
+            <button class="lang-btn" id="voiceBtnGoogle" onclick="switchVoice('google')" title="Female Voice">✨ Female</button>
           </div>
         </div>
         <div class="device-controls-tray">
@@ -1436,13 +1442,7 @@
       </div>
     </div>
 
-    <!-- Language & Customization Notice Pill -->
-    <div id="langNoticePill" style="display:none; font-size:0.75rem; color:var(--text-secondary); background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:10px; padding:8px 14px; margin-bottom:14px; align-items:center; gap:8px;">
-      <span style="color:var(--teal); font-weight:700;">✦</span>
-      <span id="langNoticeText">Default: ગુજરાતી (સફરજન, કેળું, કેરી...) · Custom TTS: English (Gujarati AI Voice Customization Coming Soon)</span>
-    </div>
-
-    <!-- 5 Channels -->
+    <!-- 5 Channels (Hidden in Gujarati mode) -->
     <div id="channelsContainer"></div>
   </div>
 </main>
@@ -1478,13 +1478,13 @@
       </div>
 
       <div id="wizVoiceSection" style="margin-bottom:24px;">
-        <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Voice Persona (Matched Voice Across Languages):</p>
+        <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Voice Persona (Male &amp; Female):</p>
         <div class="wiz-lang-row">
           <button type="button" class="wiz-lang-pill active" id="wvoiceStudio" onclick="selectWizVoice('studio')">
-            🎙️ Default (Male)
+            🎙️ Male
           </button>
           <button type="button" class="wiz-lang-pill" id="wvoiceGoogle" onclick="selectWizVoice('google')">
-            ✨ Google (Female)
+            ✨ Female
           </button>
         </div>
       </div>
@@ -1529,12 +1529,8 @@
       </div>
       <div style="display:flex; gap:10px; margin-top:20px;">
         <button class="btn-apple-connect" id="btnFinishWiz" style="width:100%; justify-content:center;" onclick="completeSetupWizard()">
-          Continue to Studio →
+          ✓ Verified! Click to Enter Studio →
         </button>
-      </div>
-      <div style="display:flex; gap:10px; margin-top:10px;">
-        <button type="button" class="pill-btn" onclick="openCardPreview('pincard')" style="flex:1; justify-content:center; padding:9px 12px; font-size:0.78rem;">🎴 Preview PIN Card</button>
-        <button type="button" class="pill-btn" onclick="openCardPreview('story')" style="flex:1; justify-content:center; padding:9px 12px; font-size:0.78rem;">📱 Preview Story</button>
       </div>
     </div>
   </div>
@@ -1906,7 +1902,7 @@ function switchVoice(mode, silent = false) {
   if (btnGoogle) btnGoogle.className = `lang-btn ${mode === 'google' ? 'active' : ''}`;
 
   const mTxt = document.getElementById('mTabVoiceText');
-  if (mTxt) mTxt.textContent = mode === 'google' ? 'Google' : 'Voice';
+  if (mTxt) mTxt.textContent = mode === 'google' ? 'Female' : 'Male';
 
   // Sync to physical box over BLE
   if (cmdChar && bleDevice && bleDevice.gatt && bleDevice.gatt.connected) {
@@ -1924,14 +1920,14 @@ function switchVoice(mode, silent = false) {
       } else {
         playEmbeddedClip('google_preview');
       }
-      toast("Voice: Google Female (EN & GU)");
+      toast("Voice: Female (EN & GU)");
     } else {
       if (currentLang === 'gu') {
         playEmbeddedClip('male_safarjan');
       } else {
         playEmbeddedClip('apple');
       }
-      toast("Voice: Default Male (EN & GU)");
+      toast("Voice: Male (EN & GU)");
     }
   }
 }
@@ -2583,21 +2579,13 @@ function switchLanguage(lang) {
 
   const vSel = document.getElementById('voiceSelector');
   if (vSel) {
-    vSel.style.display = (lang === 'gu') ? 'none' : 'inline-flex';
+    vSel.style.display = 'inline-flex';
   }
 
-  const notice = document.getElementById('langNoticePill');
-  const noticeTxt = document.getElementById('langNoticeText');
-  if (notice && noticeTxt) {
-    if (lang === 'gu') {
-      notice.style.display = 'flex';
-      noticeTxt.textContent = "Default: ગુજરાતી (સફરજન, કેળું, કેરી...) · Custom TTS: English (Gujarati AI Voice Customization Coming Soon)";
-    } else if (lang === 'both') {
-      notice.style.display = 'flex';
-      noticeTxt.textContent = "Default: English + ગુજરાતી (Apple · સફરજન...) · Custom TTS: English (Gujarati Custom Coming Soon)";
-    } else {
-      notice.style.display = 'none';
-    }
+  // When Gujarati is selected, only show the two voice options (Male & Female) and remove channel forms
+  const chanEl = document.getElementById('channelsContainer');
+  if (chanEl) {
+    chanEl.style.display = (lang === 'gu') ? 'none' : 'block';
   }
 
   channels.forEach((ch, i) => {
@@ -3282,23 +3270,15 @@ async function completeSetupWizard() {
     await cmdChar.writeValue(enc.encode(`SETLANG:${wizSelectedLang}`));
     await new Promise(r => setTimeout(r, 60));
 
-    // Safe backward compatibility: only send SETVOICE and CHIME:calm to v1.2.3+
+    // When SETUP completes, the box plays its single clean ascending boot chime
     const curParts = (deviceFwVersion || "1.0.0").split('.').map(s => parseInt(s, 10) || 0);
     const supportsVoiceMode = (curParts[0] > 1 || (curParts[0] === 1 && (curParts[1] > 2 || (curParts[1] === 2 && curParts[2] >= 3))));
     if (supportsVoiceMode) {
       await cmdChar.writeValue(enc.encode(`SETVOICE:${wizSelectedVoice === 'google' ? 1 : 0}`));
-      await new Promise(r => setTimeout(r, 60));
-      await cmdChar.writeValue(enc.encode("CHIME:calm"));
-    } else {
-      // Safe 2-tone chime for older firmwares that never freezes or makes weird sounds
-      await cmdChar.writeValue(enc.encode("CHIME"));
     }
     switchLanguage(wizSelectedLang);
     switchVoice(wizSelectedVoice, true);
   } catch (e) {}
-
-  // Play rich, serene ambient chord celebrating first-time setup
-  playLongCalmSound();
 
   updateUIState(true);
   toast(`Welcome to ${name}!`);
