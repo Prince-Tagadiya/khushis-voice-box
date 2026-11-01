@@ -156,6 +156,55 @@
     box-shadow: 0 0 6px var(--teal);
   }
 
+  /* ── Top Header Firmware Version Badge ── */
+  .fw-version-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: var(--radius-full);
+    font-size: 0.72rem;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    background: var(--card-subtle);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+  }
+  .fw-version-badge:hover {
+    transform: translateY(-1px);
+    border-color: var(--teal);
+    color: var(--text-primary);
+  }
+  .fw-version-badge.up-to-date {
+    background: rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #10B981;
+  }
+  .fw-version-badge.update-available {
+    background: rgba(14, 165, 233, 0.09);
+    border-color: rgba(14, 165, 233, 0.35);
+    color: #0284C7;
+  }
+  .fw-version-badge .fw-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  /* ── Voice Engine Selector ── */
+  .voice-selector {
+    display: inline-flex;
+    background: var(--card-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    padding: 2px;
+    gap: 2px;
+  }
+
   /* ── Layout ── */
   main {
     max-width: 820px;
@@ -897,6 +946,10 @@
       <div class="brand-title" id="headerBrandTitle">Voice Box Studio</div>
     </div>
     <div class="nav-right">
+      <div class="fw-version-badge" id="headerVersionBadge" style="display:none;" onclick="handleHeaderVersionClick()" title="Firmware Version Status">
+        <div class="fw-dot"></div>
+        <span id="headerFwText">v1.1.0 · Latest v1.2.0</span>
+      </div>
       <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
         <svg class="moon-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
         <svg class="sun-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
@@ -936,6 +989,11 @@
           <button class="lang-btn active" id="langBtnEn" onclick="switchLanguage('en')">EN</button>
           <button class="lang-btn" id="langBtnGu" onclick="switchLanguage('gu')">ગુજ</button>
           <button class="lang-btn" id="langBtnBoth" onclick="switchLanguage('both')">Both</button>
+        </div>
+        <!-- Voice Engine Switcher (Default vs Google Girl Voice) -->
+        <div class="voice-selector" id="voiceSelector" title="English Voice Engine">
+          <button class="lang-btn active" id="voiceBtnStudio" onclick="switchVoice('studio')" title="Warm Default Voice">🎙️ Default</button>
+          <button class="lang-btn" id="voiceBtnGoogle" onclick="switchVoice('google')" title="Crisp Google Girl Voice">✨ Google</button>
         </div>
         <button class="pill-btn" onclick="openCardPreview('pincard')" title="Preview and Download Caregiver PIN Card with Real PIN">🎴 PIN Card</button>
         <button class="pill-btn" onclick="openCardPreview('story')" title="Preview and Download Minimalist Instagram Story">📱 Story</button>
@@ -1003,10 +1061,22 @@
       <div class="name-preview-text" id="wizNamePreview">Voice Box</div>
 
       <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Default Speech Language:</p>
-      <div class="wiz-lang-row" style="margin-bottom:24px;">
-        <button class="wiz-lang-pill active" id="wlangEn" onclick="selectWizLang('en')">English</button>
-        <button class="wiz-lang-pill" id="wlangGu" onclick="selectWizLang('gu')">ગુજરાતી</button>
-        <button class="wiz-lang-pill" id="wlangBoth" onclick="selectWizLang('both')">Both (બંને)</button>
+      <div class="wiz-lang-row" style="margin-bottom:16px;">
+        <button type="button" class="wiz-lang-pill active" id="wlangEn" onclick="selectWizLang('en')">English</button>
+        <button type="button" class="wiz-lang-pill" id="wlangGu" onclick="selectWizLang('gu')">ગુજરાતી</button>
+        <button type="button" class="wiz-lang-pill" id="wlangBoth" onclick="selectWizLang('both')">Both (બંને)</button>
+      </div>
+
+      <div id="wizVoiceSection" style="margin-bottom:24px;">
+        <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Voice Engine (English):</p>
+        <div class="wiz-lang-row">
+          <button type="button" class="wiz-lang-pill active" id="wvoiceStudio" onclick="selectWizVoice('studio')">
+            🎙️ Default Voice
+          </button>
+          <button type="button" class="wiz-lang-pill" id="wvoiceGoogle" onclick="selectWizVoice('google')">
+            ✨ Google Girl Voice
+          </button>
+        </div>
       </div>
 
       <button class="btn-apple-connect" style="width:100%; justify-content:center;" onclick="goToWizardStep(2)">
@@ -1265,6 +1335,63 @@ function playUiSound(type, param = 0) {
   } catch (e) {}
 }
 
+function playLongCalmSound() {
+  try {
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+    // Soothing warm ambient C Major 9 chord (C3, G3, C4, E4, G4, B4, D5)
+    const notes = [
+      { f: 130.81, dur: 3.5, gain: 0.12 }, // C3
+      { f: 196.00, dur: 3.8, gain: 0.10 }, // G3
+      { f: 261.63, dur: 4.0, gain: 0.12 }, // C4
+      { f: 329.63, dur: 4.2, gain: 0.09 }, // E4
+      { f: 392.00, dur: 4.5, gain: 0.08 }, // G4
+      { f: 493.88, dur: 4.8, gain: 0.06 }, // B4
+      { f: 587.33, dur: 5.0, gain: 0.05 }  // D5
+    ];
+    notes.forEach(n => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(n.f, now);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(n.gain, now + 0.35);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + n.dur);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + n.dur);
+    });
+  } catch (e) {}
+}
+
+function playEmbeddedClip(clipKey) {
+  try {
+    const ef = window.EMBEDDED_FRUITS || {};
+    const b64 = ef[clipKey];
+    if (!b64) return;
+    const binaryString = atob(b64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    const int16 = new Int16Array(bytes.buffer);
+    const ctx = getAudioCtx();
+    const audioBuf = ctx.createBuffer(1, int16.length, 16000);
+    const chanData = audioBuf.getChannelData(0);
+    for (let i = 0; i < int16.length; i++) {
+      chanData[i] = int16[i] / 32768.0;
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = audioBuf;
+    src.connect(ctx.destination);
+    src.start();
+  } catch (e) {
+    console.warn("playEmbeddedClip error:", e);
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  THEME TOGGLE
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1296,6 +1423,42 @@ const fruitIcons     = ["🍎", "🍌", "🥭", "🍇", "🍊"];
 
 let currentLang = 'en'; // 'en', 'gu', 'both'
 let wizSelectedLang = 'en';
+let currentVoice = localStorage.getItem('voicebox_voice') || 'studio'; // 'studio' or 'google'
+let wizSelectedVoice = 'studio';
+
+function switchVoice(mode, silent = false) {
+  currentVoice = mode;
+  localStorage.setItem('voicebox_voice', mode);
+  const btnStudio = document.getElementById('voiceBtnStudio');
+  const btnGoogle = document.getElementById('voiceBtnGoogle');
+  if (btnStudio) btnStudio.className = `lang-btn ${mode === 'studio' ? 'active' : ''}`;
+  if (btnGoogle) btnGoogle.className = `lang-btn ${mode === 'google' ? 'active' : ''}`;
+
+  if (!silent) {
+    playUiSound('tap');
+    if (mode === 'google') {
+      playEmbeddedClip('google_preview');
+      toast("Voice: Google Girl Voice (Crisp & Clear)");
+    } else {
+      playEmbeddedClip('apple');
+      toast("Voice: Default Voice (Warm Studio)");
+    }
+  }
+}
+
+function selectWizVoice(mode) {
+  wizSelectedVoice = mode;
+  const sBtn = document.getElementById('wvoiceStudio');
+  const gBtn = document.getElementById('wvoiceGoogle');
+  if (sBtn) sBtn.className = `wiz-lang-pill ${mode === 'studio' ? 'active' : ''}`;
+  if (gBtn) gBtn.className = `wiz-lang-pill ${mode === 'google' ? 'active' : ''}`;
+  playUiSound('tap');
+  if (mode === 'google') {
+    playEmbeddedClip('google_preview');
+  } else {
+    playEmbeddedClip('apple');
+  }
+}
 
 let channels = [
   { id: 0, label: "Apple",  custom: false, recordedBlob: null, audioUrl: null },
@@ -1452,6 +1615,11 @@ function selectWizLang(lang) {
   document.getElementById('wlangEn').className = `wiz-lang-pill ${lang === 'en' ? 'active' : ''}`;
   document.getElementById('wlangGu').className = `wiz-lang-pill ${lang === 'gu' ? 'active' : ''}`;
   document.getElementById('wlangBoth').className = `wiz-lang-pill ${lang === 'both' ? 'active' : ''}`;
+
+  const voiceSec = document.getElementById('wizVoiceSection');
+  if (voiceSec) {
+    voiceSec.style.display = (lang === 'gu') ? 'none' : 'block';
+  }
 
   // Live acoustic feedback from the box: speaks a sample fruit in selected language!
   if (cmdChar && bleDevice && bleDevice.gatt.connected) {
@@ -1882,6 +2050,11 @@ function switchLanguage(lang) {
   document.getElementById('langBtnGu').className = `lang-btn ${lang === 'gu' ? 'active' : ''}`;
   document.getElementById('langBtnBoth').className = `lang-btn ${lang === 'both' ? 'active' : ''}`;
 
+  const vSel = document.getElementById('voiceSelector');
+  if (vSel) {
+    vSel.style.display = (lang === 'gu') ? 'none' : 'inline-flex';
+  }
+
   const notice = document.getElementById('langNoticePill');
   const noticeTxt = document.getElementById('langNoticeText');
   if (notice && noticeTxt) {
@@ -2165,8 +2338,38 @@ function discardRecording(idx) {
 function previewTTS(idx) {
   const text = (document.getElementById(`inp-${idx}`).value || channels[idx].label).trim();
   if (!text) return;
+
+  const norm = text.toLowerCase().trim();
+  const isGoogle = (currentVoice === 'google');
+  const ef = window.EMBEDDED_FRUITS || {};
+
+  let clipKey = null;
+  if (norm.includes('apple') || norm.includes('સફરજન') || (idx === 0 && (!norm || norm === 'apple' || norm === 'સફરજન'))) {
+    clipKey = (currentLang === 'gu' || norm.includes('સફરજન')) ? 'safarjan' : (isGoogle ? 'google_apple' : 'apple');
+  } else if (norm.includes('banana') || norm.includes('કેળ') || (idx === 1 && (!norm || norm === 'banana' || norm === 'કેળું'))) {
+    clipKey = (currentLang === 'gu' || norm.includes('કેળ')) ? 'kelu' : (isGoogle ? 'google_banana' : 'banana');
+  } else if (norm.includes('mango') || norm.includes('કેરી') || (idx === 2 && (!norm || norm === 'mango' || norm === 'કેરી'))) {
+    clipKey = (currentLang === 'gu' || norm.includes('કેરી')) ? 'keri' : (isGoogle ? 'google_mango' : 'mango');
+  } else if (norm.includes('grape') || norm.includes('દ્રાક્ષ') || (idx === 3 && (!norm || norm === 'grapes' || norm === 'દ્રાક્ષ'))) {
+    clipKey = (currentLang === 'gu' || norm.includes('દ્રાક્ષ')) ? 'draksh' : (isGoogle ? 'google_grapes' : 'grapes');
+  } else if (norm.includes('orange') || norm.includes('નારંગી') || (idx === 4 && (!norm || norm === 'orange' || norm === 'નારંગી'))) {
+    clipKey = (currentLang === 'gu' || norm.includes('નારંગી')) ? 'narangi' : (isGoogle ? 'google_orange' : 'orange');
+  }
+
+  if (clipKey && ef[clipKey]) {
+    playEmbeddedClip(clipKey);
+    return;
+  }
+
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
+  if (isGoogle) {
+    const voices = window.speechSynthesis.getVoices();
+    const gVoice = voices.find(v => v.name.includes('Google') && v.lang.startsWith('en')) ||
+                   voices.find(v => v.lang === 'en-US' && (v.name.includes('Female') || v.name.includes('Samantha')));
+    if (gVoice) u.voice = gVoice;
+    u.pitch = 1.1;
+  }
   window.speechSynthesis.speak(u);
 }
 
@@ -2182,23 +2385,44 @@ async function sendTTS(idx) {
   const norm = text.toLowerCase().trim();
   let b64 = null;
   const ef = window.EMBEDDED_FRUITS || {};
+  const isGoogle = (currentVoice === 'google');
 
   if (norm.includes('apple') || norm.includes('સફરજન') || (idx === 0 && (!norm || norm === 'apple' || norm === 'સફરજન'))) {
-    b64 = (currentLang === 'gu' || norm.includes('સફરજન')) ? (ef.safarjan || ef.apple) : ef.apple;
+    if (currentLang === 'gu' || norm.includes('સફરજન')) {
+      b64 = ef.safarjan || ef.apple;
+    } else {
+      b64 = isGoogle ? (ef.google_apple || ef.apple) : ef.apple;
+    }
   } else if (norm.includes('banana') || norm.includes('કેળ') || (idx === 1 && (!norm || norm === 'banana' || norm === 'કેળું'))) {
-    b64 = (currentLang === 'gu' || norm.includes('કેળ')) ? (ef.kelu || ef.banana) : ef.banana;
+    if (currentLang === 'gu' || norm.includes('કેળ')) {
+      b64 = ef.kelu || ef.banana;
+    } else {
+      b64 = isGoogle ? (ef.google_banana || ef.banana) : ef.banana;
+    }
   } else if (norm.includes('mango') || norm.includes('કેરી') || (idx === 2 && (!norm || norm === 'mango' || norm === 'કેરી'))) {
-    b64 = (currentLang === 'gu' || norm.includes('કેરી')) ? (ef.keri || ef.mango) : ef.mango;
+    if (currentLang === 'gu' || norm.includes('કેરી')) {
+      b64 = ef.keri || ef.mango;
+    } else {
+      b64 = isGoogle ? (ef.google_mango || ef.mango) : ef.mango;
+    }
   } else if (norm.includes('grape') || norm.includes('દ્રાક્ષ') || (idx === 3 && (!norm || norm === 'grapes' || norm === 'દ્રાક્ષ'))) {
-    b64 = (currentLang === 'gu' || norm.includes('દ્રાક્ષ')) ? (ef.draksh || ef.grapes) : ef.grapes;
+    if (currentLang === 'gu' || norm.includes('દ્રાક્ષ')) {
+      b64 = ef.draksh || ef.grapes;
+    } else {
+      b64 = isGoogle ? (ef.google_grapes || ef.grapes) : ef.grapes;
+    }
   } else if (norm.includes('orange') || norm.includes('નારંગી') || (idx === 4 && (!norm || norm === 'orange' || norm === 'નારંગી'))) {
-    b64 = (currentLang === 'gu' || norm.includes('નારંગી')) ? (ef.narangi || ef.orange) : ef.orange;
+    if (currentLang === 'gu' || norm.includes('નારંગી')) {
+      b64 = ef.narangi || ef.orange;
+    } else {
+      b64 = isGoogle ? (ef.google_orange || ef.orange) : ef.orange;
+    }
   }
 
   try {
     let pcm = null;
     if (b64) {
-      // Decode pristine studio 16kHz PCM directly from offline bundle!
+      // Decode pristine studio/Google 16kHz PCM directly from offline bundle!
       const binaryString = atob(b64);
       const len = binaryString.length;
       const bytes = new Uint8Array(len);
@@ -2211,7 +2435,10 @@ async function sendTTS(idx) {
       if (typeof generateSpeech === 'function') {
         try {
           toast(`Synthesizing "${text}" offline...`);
-          const wavBytes = generateSpeech(text, { amplitude: 100, speed: 135, pitch: 50 });
+          const synthArgs = isGoogle
+            ? { voice: "en/en-us+f2", pitch: 72, speed: 140, amplitude: 100 }
+            : { voice: "en/en-us", pitch: 50, speed: 135, amplitude: 100 };
+          const wavBytes = generateSpeech(text, synthArgs);
           if (wavBytes && wavBytes.buffer) {
             pcm = await convertTo16kPcm(wavBytes.buffer);
           }
@@ -2500,10 +2727,14 @@ async function completeSetupWizard() {
     // Save language quietly without speaking random fruit
     await cmdChar.writeValue(enc.encode(`SETLANG:${wizSelectedLang}`));
     await new Promise(r => setTimeout(r, 60));
-    // Play ONE serene calm confirmation harmony from physical speaker
-    await cmdChar.writeValue(enc.encode("CHIME"));
+    // Play serene calm confirmation harmony from physical speaker
+    await cmdChar.writeValue(enc.encode("CHIME:calm"));
     switchLanguage(wizSelectedLang);
+    switchVoice(wizSelectedVoice, true);
   } catch (e) {}
+
+  // Play rich, serene ambient chord celebrating first-time setup
+  playLongCalmSound();
 
   updateUIState(true);
   toast(`Welcome to ${name}!`);
@@ -2907,6 +3138,8 @@ function updateUIState(connected) {
     rollbackBtn.style.display = "inline-block";
     brand.textContent = deviceName;
     checkFirmwareUpdate();
+    updateHeaderVersionBadge();
+    switchVoice(currentVoice, true);
   } else {
     pill.classList.remove('connected');
     txt.textContent = "Disconnected";
@@ -2916,6 +3149,8 @@ function updateUIState(connected) {
     rollbackBtn.style.display = "none";
     brand.textContent = "Voice Box Studio";
     document.getElementById('updateBanner').style.display = "none";
+    const hBadge = document.getElementById('headerVersionBadge');
+    if (hBadge) hBadge.style.display = "none";
   }
 }
 
@@ -2924,12 +3159,48 @@ function updateUIState(connected) {
 // ─────────────────────────────────────────────────────────────────────────────
 function checkFirmwareUpdate() {
   const banner = document.getElementById('updateBanner');
-  if (!banner) return;
 
   // Semantic version comparison:
-  // If the device is running the latest version (1.1.0 >= 1.1.0), do NOT show the install button!
+  // If the device is running the latest version (1.2.0 >= 1.2.0), do NOT show the install button!
   const curParts = (deviceFwVersion || "1.0.0").split('.').map(s => parseInt(s, 10) || 0);
-  const targetParts = (LATEST_FW.version || "1.1.0").split('.').map(s => parseInt(s, 10) || 0);
+  const targetParts = (LATEST_FW.version || "1.2.0").split('.').map(s => parseInt(s, 10) || 0);
+
+  let isOutdated = false;
+  for (let i = 0; i < 3; i++) {
+    const cur = curParts[i] || 0;
+    const tgt = targetParts[i] || 0;
+    if (cur < tgt) { isOutdated = true; break; }
+    if (cur > tgt) { isOutdated = false; break; }
+  }
+
+  if (banner) {
+    if (isOutdated) {
+      banner.style.display = "flex";
+      document.getElementById('updateBannerText').textContent = `${LATEST_FW.title} Available for your box (${LATEST_FW.changelog})`;
+    } else {
+      banner.style.display = "none";
+    }
+  }
+
+  updateHeaderVersionBadge();
+}
+
+function updateHeaderVersionBadge() {
+  const badge = document.getElementById('headerVersionBadge');
+  const txt = document.getElementById('headerFwText');
+  if (!badge || !txt) return;
+
+  if (!bleDevice || !bleDevice.gatt || !bleDevice.gatt.connected || !isAuthenticated) {
+    badge.style.display = 'none';
+    return;
+  }
+
+  badge.style.display = 'inline-flex';
+  const curVer = deviceFwVersion || "1.0.0";
+  const tgtVer = LATEST_FW.version || "1.2.0";
+
+  const curParts = curVer.split('.').map(s => parseInt(s, 10) || 0);
+  const tgtParts = tgtVer.split('.').map(s => parseInt(s, 10) || 0);
 
   let isOutdated = false;
   for (let i = 0; i < 3; i++) {
@@ -2940,10 +3211,36 @@ function checkFirmwareUpdate() {
   }
 
   if (isOutdated) {
-    banner.style.display = "flex";
-    document.getElementById('updateBannerText').textContent = `${LATEST_FW.title} Available for your box (${LATEST_FW.changelog})`;
+    badge.className = 'fw-version-badge update-available';
+    txt.textContent = `v${curVer} · Latest: v${tgtVer} ⬆`;
+    badge.title = `Update available! Box is running v${curVer}, latest is v${tgtVer}. Click to install.`;
   } else {
-    banner.style.display = "none";
+    badge.className = 'fw-version-badge up-to-date';
+    txt.textContent = `v${curVer} · Latest v${tgtVer} ✓`;
+    badge.title = `Box is on latest firmware (v${curVer}).`;
+  }
+}
+
+function handleHeaderVersionClick() {
+  playUiSound('tap');
+  const curVer = deviceFwVersion || "1.0.0";
+  const tgtVer = LATEST_FW.version || "1.2.0";
+  const curParts = curVer.split('.').map(s => parseInt(s, 10) || 0);
+  const tgtParts = tgtVer.split('.').map(s => parseInt(s, 10) || 0);
+  let isOutdated = false;
+  for (let i = 0; i < 3; i++) {
+    if ((curParts[i] || 0) < (tgtParts[i] || 0)) { isOutdated = true; break; }
+    if ((curParts[i] || 0) > (tgtParts[i] || 0)) { isOutdated = false; break; }
+  }
+
+  if (isOutdated) {
+    const banner = document.getElementById('updateBanner');
+    if (banner && banner.style.display !== 'none') {
+      banner.scrollIntoView({ behavior: 'smooth' });
+    }
+    startOtaUpdate();
+  } else {
+    toast(`✓ Your box is on the latest firmware (v${curVer})`);
   }
 }
 
