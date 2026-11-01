@@ -242,6 +242,81 @@
     margin-right: 6px;
   }
 
+  /* Comparison Table */
+  .comparison-wrap {
+    overflow-x: auto;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 20px;
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 24px;
+  }
+
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.9rem;
+  }
+
+  .compare-table th, .compare-table td {
+    padding: 14px 18px;
+    border-bottom: 1px solid #F0EAE1;
+  }
+
+  .compare-table th {
+    background: #F4EDE2;
+    color: var(--brand-forest);
+    font-weight: 750;
+    font-size: 0.92rem;
+  }
+
+  .compare-table th.col-creato {
+    background: var(--brand-forest);
+    color: #FAF7F0;
+    font-weight: 800;
+    text-align: center;
+  }
+
+  .compare-table th.col-other {
+    background: #E5E7EB;
+    color: #4B5563;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .compare-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .check-green {
+    color: #1E7E34;
+    font-size: 1.15rem;
+    font-weight: 800;
+  }
+
+  .cross-gray {
+    color: #9CA3AF;
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+
+  .col-other-cell {
+    background: #FAFAFA;
+    color: #6B7280;
+    text-align: center;
+    width: 25%;
+  }
+
+  .col-creato-cell {
+    background: #F7FAF7;
+    color: var(--brand-forest);
+    font-weight: 600;
+    text-align: center;
+    width: 25%;
+    border-left: 2px solid #E1EBE2;
+  }
+
   /* Contact & Support Box */
   .support-box {
     background: var(--brand-forest);
@@ -426,8 +501,8 @@
     </div>
 
     <div class="card">
-      <div class="card-title">🎴 Printable PIN Card & Stories</div>
-      <p style="font-size: 0.88rem; color: var(--text-secondary);">Tap <strong>🎴 PIN Card</strong> in the studio to generate an aesthetic wallet-sized card showing your box name, PIN, and connection guide for teachers or caregivers. You can also generate high-res social stories.</p>
+      <div class="card-title">🎴 Printable Caregiver PIN Card</div>
+      <p style="font-size: 0.88rem; color: var(--text-secondary);">Tap <strong>🎴 PIN Card</strong> in the studio to generate an aesthetic wallet-sized card showing your box name, PIN, and quick connection guide for teachers, therapists, or caregivers.</p>
     </div>
   </div>
 
@@ -443,6 +518,91 @@
         <li style="margin-bottom: 10px;"><strong>1-Click Wireless Updates:</strong> Whenever a new software improvement is available, an <em>"Install Update"</em> banner appears. Tap it to upgrade your box wirelessly over Bluetooth in 60 seconds.</li>
         <li><strong>Low Battery Care:</strong> Charge using standard 5V USB. A gentle confirmation chime sounds when powered on.</li>
       </ul>
+    </div>
+  </div>
+
+  <!-- 5. Why Choose Creato4 Voice Box (Comparison) -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <h2>Why Choose Creato4 Voice Box vs. Ordinary Market Speakers</h2>
+    </div>
+    <p style="font-size: 0.92rem; color: var(--text-secondary); margin-bottom: 16px;">
+      Most commercial sound toys and market speakers are closed, hardcoded plastic units with distorted buzzers. The Creato4 Voice Box is an adaptive, professional cognitive speech assistant designed for long-term personalized development.
+    </p>
+
+    <div class="comparison-wrap">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Capability &amp; Experience</th>
+            <th class="col-other">Ordinary Market Speakers</th>
+            <th class="col-creato">Creato4 Voice Box</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Press tactile button to speak fruit name</strong></td>
+            <td class="col-other-cell"><span class="check-green">✓</span></td>
+            <td class="col-creato-cell"><span class="check-green">✓</span></td>
+          </tr>
+          <tr>
+            <td><strong>Authentic Dual Voice Personas (Male &amp; Female)</strong></td>
+            <td class="col-other-cell"><span class="cross-gray">✕</span></td>
+            <td class="col-creato-cell"><span class="check-green">✓ (Studio Male + Google Female)</span></td>
+          </tr>
+          <tr>
+            <td><strong>Authentic Gujarati &amp; Bilingual Learning</strong></td>
+            <td class="col-other-cell"><span class="cross-gray">✕</span></td>
+            <td class="col-creato-cell"><span class="check-green">✓ (English, ગુજરાતી &amp; Both)</span></td>
+          </tr>
+          <tr>
+            <td><strong>Complimentary Private Web Studio App</strong></td>
+            <td class="col-other-cell"><span class="cross-gray">✕</span></td>
+            <td class="col-creato-cell"><span class="check-green">✓ (Included as Free Gift)</span></td>
+          </tr>
+          <tr>
+            <td><strong>Wireless Bluetooth Customization (No cables)</strong></td>
+            <td class="col-other-cell"><span class="cross-gray">✕</span></td>
+            <td class="col-creato-cell"><span class="check-green">✓ (Instant Web Bluetooth)</span></td>
+          </tr>
+          <tr>
+            <td><strong>1-Touch Voice Recording (Parent / Therapist Voice)</strong></td>
+            <td class="col-other-cell"><span class="cross-gray">✕</span></td>
+            <td class="col-creato-cell"><span class="check-green">✓ (Record in 2 Seconds)</span></td>
+          </tr>
+          <tr>
+            <td><strong>Custom Word &amp; Vocabulary Reassignment</strong></td>
+            <td class="col-other-cell"><span class="cross-gray">✕</span></td>
+            <td class="col-creato-cell"><span class="check-green">✓ (Reassign Any Word)</span></td>
+          </tr>
+          <tr>
+            <td><strong>Caregiver Security PIN &amp; Printable PIN Card</strong></td>
+            <td class="col-other-cell"><span class="cross-gray">✕</span></td>
+            <td class="col-creato-cell"><span class="check-green">✓ (Anti-Tamper Protected)</span></td>
+          </tr>
+          <tr>
+            <td><strong>Pristine Sound Engine (Zero Buzz, Noise Gating, or Clipping)</strong></td>
+            <td class="col-other-cell"><span class="cross-gray">✕</span></td>
+            <td class="col-creato-cell"><span class="check-green">✓ (Mastered Clear Audio)</span></td>
+          </tr>
+          <tr>
+            <td><strong>Smart 45s Battery Sleep with Zero-Lag Wake</strong></td>
+            <td class="col-other-cell"><span class="cross-gray">✕</span></td>
+            <td class="col-creato-cell"><span class="check-green">✓ (Instant Touch Wake)</span></td>
+          </tr>
+          <tr>
+            <td><strong>Wireless Over-The-Air (OTA) Updates in 60s</strong></td>
+            <td class="col-other-cell"><span class="cross-gray">✕</span></td>
+            <td class="col-creato-cell"><span class="check-green">✓ (1-Click Web Update)</span></td>
+          </tr>
+          <tr>
+            <td><strong>Dedicated Creato4 Lab Support &amp; Custom Vocabulary</strong></td>
+            <td class="col-other-cell"><span class="cross-gray">✕</span></td>
+            <td class="col-creato-cell"><span class="check-green">✓ (princetagadiya11@gmail.com)</span></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
@@ -463,3 +623,4 @@
 
 </body>
 </html>
+

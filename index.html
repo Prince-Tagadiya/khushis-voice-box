@@ -164,6 +164,33 @@
     box-shadow: 0 0 6px var(--teal);
   }
 
+  /* ── Header Guide Link ── */
+  .header-guide-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: var(--radius-full);
+    font-size: 0.74rem;
+    font-weight: 600;
+    background: var(--card-subtle);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+  }
+  .header-guide-link:hover {
+    transform: translateY(-1px);
+    border-color: var(--teal);
+    color: var(--text-primary);
+    background: var(--card);
+  }
+  @media (max-width: 580px) {
+    .header-guide-link span { display: none; }
+    .header-guide-link { padding: 6px 8px; }
+  }
+
   /* ── Top Header Firmware Version Badge ── */
   .fw-version-badge {
     display: inline-flex;
@@ -1359,6 +1386,10 @@
       <div class="brand-title" id="headerBrandTitle">Voice Box Studio</div>
     </div>
     <div class="nav-right">
+      <a href="HANDOVER_GUIDE.html" target="_blank" class="header-guide-link" title="Product User Manual & Handover Guide">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <span>About Product</span>
+      </a>
       <div class="fw-version-badge" id="headerVersionBadge" style="display:none;" onclick="handleHeaderVersionClick()" title="Firmware Version Status">
         <div class="fw-dot"></div>
         <span id="headerFwText">v1.1.0 · Latest v1.2.0</span>
@@ -1411,7 +1442,7 @@
         </div>
         <div class="device-controls-tray">
           <button class="pill-btn" onclick="openCardPreview('pincard')" title="Preview and Download Caregiver PIN Card with Real PIN">🎴 PIN Card</button>
-          <button class="pill-btn" onclick="openCardPreview('story')" title="Preview and Download Minimalist Instagram Story">📱 Story</button>
+          <a href="HANDOVER_GUIDE.html" target="_blank" class="pill-btn" style="text-decoration:none;" title="Product Handover & User Guide">📖 About Product</a>
           <button class="pill-btn" onclick="openChangePinModal()">Change PIN</button>
           <button class="pill-btn" onclick="handleSleepDevice()">Sleep</button>
           <button class="pill-btn danger" onclick="disconnectBLE()">Disconnect</button>
@@ -1642,7 +1673,7 @@
     <!-- Post-Update Reconnect & Steps View -->
     <div id="otaSuccessView" style="display:none; padding:10px 4px 6px;">
       <div style="font-size:2.8rem; margin-bottom:12px;">🎉</div>
-      <h3 style="margin-bottom:8px; font-size:1.25rem; font-weight:700;">VoiceOS v1.2.4 Installed!</h3>
+      <h3 style="margin-bottom:8px; font-size:1.25rem; font-weight:700;">VoiceOS v1.2.3 Installed!</h3>
       <p style="font-size:0.84rem; color:var(--text-secondary); line-height:1.6; margin-bottom:22px;">
         Your Voice Box has updated and is rebooting now.<br><br>
         <strong>Next Step:</strong> Wait 3–5 seconds for the boot chime, then tap <strong>Reconnect Voice Box</strong> below!
@@ -1705,12 +1736,12 @@
     <span>PIN Card</span>
   </button>
 
-  <button class="mobile-tab-btn" id="mTabStory" onclick="handleMobileTab('story')">
+  <a href="HANDOVER_GUIDE.html" target="_blank" class="mobile-tab-btn" id="mTabGuide" style="text-decoration:none;">
     <div class="m-tab-icon">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
     </div>
-    <span>Story</span>
-  </button>
+    <span>Guide</span>
+  </a>
 
   <button class="mobile-tab-btn" id="mTabPower" onclick="handleMobileTab('power')">
     <div class="m-tab-icon">
@@ -1720,8 +1751,8 @@
   </button>
 </nav>
 
-<script src="fruits_audio.js?v=1.2.4"></script>
-<script src="speakGenerator.js?v=1.2.4"></script>
+<script src="fruits_audio.js?v=1.2.3"></script>
+<script src="speakGenerator.js?v=1.2.3"></script>
 <script>
 // ─────────────────────────────────────────────────────────────────────────────
 //  WEB AUDIO SYNTHESIZER (APPLE-LIKE ACOUSTIC CHIMES)
@@ -1945,8 +1976,6 @@ function handleMobileTab(tab) {
     switchVoice(nextVoice);
   } else if (tab === 'pincard') {
     openCardPreview('pincard');
-  } else if (tab === 'story') {
-    openCardPreview('story');
   } else if (tab === 'power') {
     handleSleepDevice();
   }
@@ -2004,10 +2033,10 @@ let fileTargetIndex = -1;
 
 // Latest OTA Release Config
 const LATEST_FW = {
-  version: "1.2.4",
-  title: "VoiceOS v1.2.4",
-  binUrl: "firmware/voicebox_fw_v1.2.4.bin",
-  changelog: "Pristine High-Fidelity Female & Male Voice Pipeline, Normalized Acoustics, & Crystal-Clear Distortion-Free Audio"
+  version: "1.2.3",
+  title: "VoiceOS v1.2.3",
+  binUrl: "firmware/voicebox_fw_v1.2.3.bin",
+  changelog: "Dual Voice Personas (Studio Male & Google Female) with 100% matched speech across English & Gujarati"
 };
 
 // Mic recording state
@@ -2530,33 +2559,17 @@ function openCardPreview(type) {
   const imgEl = document.getElementById('previewImage');
   const btnDl = document.getElementById('btnDownloadPreview');
 
-  if (type === 'pincard') {
-    titleEl.textContent = "🎴 Caregiver PIN Card";
-    subEl.textContent = "Your confidential real PIN and assistive settings are rendered below.";
-    currentPreviewFilename = `${cleanName}_Caregiver_PIN_Card.png`;
-    btnDl.textContent = "⬇️ Download PIN Card";
+  titleEl.textContent = "🎴 Caregiver PIN Card";
+  subEl.textContent = "Your confidential real PIN and assistive settings are rendered below.";
+  currentPreviewFilename = `${cleanName}_Caregiver_PIN_Card.png`;
+  btnDl.textContent = "⬇️ Download PIN Card";
 
-    const canvas = generateCaregiverCanvas();
-    canvas.toBlob(blob => {
-      currentPreviewBlob = blob;
-      imgEl.src = URL.createObjectURL(blob);
-      document.getElementById('previewModal').classList.add('open');
-    }, 'image/png');
-
-  } else {
-    titleEl.textContent = "📱 Instagram Activation Story";
-    subEl.textContent = "9:16 vertical editorial unboxing story ready to share.";
-    currentPreviewFilename = `${cleanName}_Instagram_Story.png`;
-    btnDl.textContent = "⬇️ Download Story";
-
-    generateStoryCanvas(canvas => {
-      canvas.toBlob(blob => {
-        currentPreviewBlob = blob;
-        imgEl.src = URL.createObjectURL(blob);
-        document.getElementById('previewModal').classList.add('open');
-      }, 'image/png');
-    });
-  }
+  const canvas = generateCaregiverCanvas();
+  canvas.toBlob(blob => {
+    currentPreviewBlob = blob;
+    imgEl.src = URL.createObjectURL(blob);
+    document.getElementById('previewModal').classList.add('open');
+  }, 'image/png');
 
   btnDl.onclick = () => {
     if (!currentPreviewBlob) return;
@@ -2970,8 +2983,8 @@ async function sendTTS(idx) {
         try {
           toast(`Synthesizing "${text}" offline...`);
           const synthArgs = isGoogle
-            ? { pitch: 60, speed: 130, amplitude: 95 }
-            : { pitch: 50, speed: 130, amplitude: 95 };
+            ? { voice: "en/en-us+f2", pitch: 72, speed: 140, amplitude: 100 }
+            : { voice: "en/en-us", pitch: 50, speed: 135, amplitude: 100 };
           const wavBytes = generateSpeech(text, synthArgs);
           if (wavBytes && wavBytes.buffer) {
             pcm = await convertTo16kPcm(wavBytes.buffer);
@@ -3021,26 +3034,25 @@ async function convertTo16kPcm(arrayBuffer) {
 
   const offCtx = new OfflineAudioContext(1, targetSamples, 16000);
 
-  // 1. Clean High-pass filter at 100 Hz (strips inaudible rumble without thinning voice)
+  // 1. High-pass filter at 130 Hz (strips away inaudible low-frequency rumble that wastes speaker power)
   const hpf = offCtx.createBiquadFilter();
   hpf.type = "highpass";
-  hpf.frequency.value = 100;
-  hpf.Q.value = 0.7;
+  hpf.frequency.value = 130;
 
-  // 2. Vocal clarity EQ (+2.0 dB at 2800 Hz) for crisp natural articulation without harshness
+  // 2. Vocal presence boost at 2500 Hz for maximum intelligibility
   const eq = offCtx.createBiquadFilter();
   eq.type = "peaking";
-  eq.frequency.value = 2800;
-  eq.gain.value = 2.0;
+  eq.frequency.value = 2500;
+  eq.gain.value = 4.5;
   eq.Q.value = 1.0;
 
-  // 3. Smooth vocal compressor to balance loud/soft dynamics without distortion
+  // 3. Dynamic vocal compressor for punchy shouting loudness
   const comp = offCtx.createDynamicsCompressor();
-  comp.threshold.value = -18;
-  comp.knee.value = 6;
-  comp.ratio.value = 3.5;
-  comp.attack.value = 0.005;
-  comp.release.value = 0.20;
+  comp.threshold.value = -24;
+  comp.knee.value = 8;
+  comp.ratio.value = 12;
+  comp.attack.value = 0.003;
+  comp.release.value = 0.15;
 
   const src = offCtx.createBufferSource();
   src.buffer = decoded;
@@ -3059,15 +3071,14 @@ async function convertTo16kPcm(arrayBuffer) {
     const a = Math.abs(f[i]);
     if (a > peak) peak = a;
   }
-  // Safe studio normalization to 0.95 peak (-0.45 dBFS)
-  const mult = peak > 0 ? (0.95 / peak) : 1.0;
+  const mult = peak > 0 ? (1.35 / peak) : 1.0;
 
   const pcm = new Int16Array(f.length);
   for (let i = 0; i < f.length; i++) {
     let s = f[i] * mult;
-    // Transparent soft-knee analog saturation
-    if (s > 0.90) s = 0.90 + (s - 0.90) * 0.25;
-    else if (s < -0.90) s = -0.90 + (s + 0.90) * 0.25;
+    // Punchy soft-knee saturation curve to eliminate harsh digital clipping while shouting loud
+    if (s > 0.85) s = 0.85 + (s - 0.85) * 0.35;
+    else if (s < -0.85) s = -0.85 + (s + 0.85) * 0.35;
 
     if (s > 1.0) s = 1.0;
     if (s < -1.0) s = -1.0;
@@ -3819,7 +3830,7 @@ function updateHeaderVersionBadge() {
 
   badge.style.display = 'inline-flex';
   const curVer = deviceFwVersion || "1.0.0";
-  const tgtVer = LATEST_FW.version || "1.2.3";
+  const tgtVer = LATEST_FW.version || "1.2.4";
 
   const curParts = curVer.split('.').map(s => parseInt(s, 10) || 0);
   const tgtParts = tgtVer.split('.').map(s => parseInt(s, 10) || 0);
@@ -3846,7 +3857,7 @@ function updateHeaderVersionBadge() {
 function handleHeaderVersionClick() {
   playUiSound('tap');
   const curVer = deviceFwVersion || "1.0.0";
-  const tgtVer = LATEST_FW.version || "1.2.3";
+  const tgtVer = LATEST_FW.version || "1.2.4";
   const curParts = curVer.split('.').map(s => parseInt(s, 10) || 0);
   const tgtParts = tgtVer.split('.').map(s => parseInt(s, 10) || 0);
   let isOutdated = false;
