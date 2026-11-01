@@ -8,6 +8,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Voice Box">
 <meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="shortcut icon" href="favicon.ico">
 <link rel="apple-touch-icon" href="creato4logo.png">
 <title>Voice Box — Creato4 Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1370,11 +1372,10 @@
 <main>
   <!-- 1. Apple-Style Clean Landing (Disconnected) -->
   <div class="landing-hero" id="landingHero">
-    <img src="creato4logo.png" class="hero-logo-large" alt="Creato4 Lab">
     <h1>Voice Box</h1>
     <p>Tactile speech assistant for focused cognitive processing and single-touch clarity.</p>
 
-    <button class="btn-apple-connect" onclick="handleConnectClick()">
+    <button class="btn-apple-connect" id="btnConnectHero" onclick="handleConnectClick()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m7 7 10 10-5 5V2l5 5L7 17"/></svg>
       <span>Connect Voice Box</span>
     </button>
@@ -1706,8 +1707,8 @@
   </button>
 </nav>
 
-<script src="fruits_audio.js"></script>
-<script src="speakGenerator.js"></script>
+<script src="fruits_audio.js?v=1.2.3"></script>
+<script src="speakGenerator.js?v=1.2.3"></script>
 <script>
 // ─────────────────────────────────────────────────────────────────────────────
 //  WEB AUDIO SYNTHESIZER (APPLE-LIKE ACOUSTIC CHIMES)
@@ -2017,6 +2018,7 @@ function toast(msg) {
 // ─────────────────────────────────────────────────────────────────────────────
 function initPinBoxes(containerId, onChange, nextContainerId = null) {
   const container = document.getElementById(containerId);
+  if (!container) return;
   const boxes = container.querySelectorAll('.pin-box');
 
   boxes.forEach((box, i) => {
@@ -2043,11 +2045,15 @@ function initPinBoxes(containerId, onChange, nextContainerId = null) {
 }
 
 function getPinValue(containerId) {
-  const boxes = document.querySelectorAll(`#${containerId} .pin-box`);
+  const container = document.getElementById(containerId);
+  if (!container) return '';
+  const boxes = container.querySelectorAll('.pin-box');
   return Array.from(boxes).map(b => b.value).join('');
 }
 function clearPinBoxes(containerId) {
-  const boxes = document.querySelectorAll(`#${containerId} .pin-box`);
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const boxes = container.querySelectorAll('.pin-box');
   boxes.forEach(b => b.value = '');
   if (boxes[0]) boxes[0].focus();
 }
@@ -3217,20 +3223,27 @@ function goToWizardStep(step) {
 function triggerCalmChimeTest() {
   const box = document.getElementById('wizTestBox');
   if (box) {
-    box.innerHTML = "<span>🌊</span> <span>Playing Calm Harmony from Voice Box...</span>";
+    box.innerHTML = "<span>🌊</span> <span>Testing Acoustic Speaker...</span>";
     box.classList.add('verified');
   }
   if (cmdChar && bleDevice && bleDevice.gatt.connected) {
     try {
       const enc = new TextEncoder();
-      cmdChar.writeValue(enc.encode("CHIME:calm"));
+      const curParts = (deviceFwVersion || "1.0.0").split('.').map(s => parseInt(s, 10) || 0);
+      const supportsVoiceMode = (curParts[0] > 1 || (curParts[0] === 1 && (curParts[1] > 2 || (curParts[1] === 2 && curParts[2] >= 3))));
+      if (supportsVoiceMode) {
+        cmdChar.writeValue(enc.encode("CHIME:calm"));
+      } else {
+        // Safe 2-tone chime for older firmwares that avoids heavy float synthesis
+        cmdChar.writeValue(enc.encode("CHIME"));
+      }
     } catch (e) {}
   }
   setTimeout(() => {
     if (box && document.getElementById('wizardStep3') && document.getElementById('wizardStep3').style.display !== 'none') {
       box.innerHTML = "<span>✓</span> <span>Acoustic Passed · Press Box Buttons to Test</span>";
     }
-  }, 2500);
+  }, 1600);
 }
 
 async function completeSetupWizard() {
@@ -3426,6 +3439,8 @@ async function resetChannel(idx) {
 // ─────────────────────────────────────────────────────────────────────────────
 //  BLUETOOTH & AUTHENTICATION
 // ─────────────────────────────────────────────────────────────────────────────
+let syncTimeoutId = null;
+
 function checkBLE() {
   if (!bleDevice || !bleDevice.gatt.connected || !isAuthenticated) {
     toast("Please connect voice box");
@@ -3448,8 +3463,14 @@ async function handleConnectClick() {
   }
   connectBLE();
 }
+window.handleConnectClick = handleConnectClick;
 
 async function connectBLE() {
+  if (syncTimeoutId) {
+    clearTimeout(syncTimeoutId);
+    syncTimeoutId = null;
+  }
+
   try {
     toast("Finding Voice Box...");
     try {
@@ -3474,6 +3495,12 @@ async function connectBLE() {
       });
     }
 
+    if (!bleDevice) {
+      toast("No device selected");
+      return;
+    }
+
+    bleDevice.removeEventListener('gattserverdisconnected', onDisconnected);
     bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
     toast("Connecting...");
     bleServer = await bleDevice.gatt.connect();
@@ -3484,6 +3511,7 @@ async function connectBLE() {
     dataChar = await service.getCharacteristic(CHAR_DATA_UUID);
 
     await cmdChar.startNotifications();
+    cmdChar.removeEventListener('characteristicvaluechanged', handleBleNotification);
     cmdChar.addEventListener('characteristicvaluechanged', handleBleNotification);
 
     toast("Synchronizing...");
@@ -3492,10 +3520,17 @@ async function connectBLE() {
     const enc = new TextEncoder();
     try {
       await cmdChar.writeValue(enc.encode("GETINFO"));
-    } catch (e) {}
+    } catch (e) {
+      console.warn("GETINFO write note:", e);
+    }
 
-    // Immediate prompt: If not handled by ST/INFO notification within 350ms, open login modal or setup wizard
-    setTimeout(() => {
+    // Safety synchronization guard (800ms)
+    syncTimeoutId = setTimeout(() => {
+      syncTimeoutId = null;
+      if (!bleDevice || !bleDevice.gatt.connected) {
+        toast("Connection lost during sync");
+        return;
+      }
       if (!isAuthenticated && !document.getElementById('wizardModal').classList.contains('open') && !document.getElementById('loginModal').classList.contains('open')) {
         if (!isDeviceSetup) {
           launchSetupWizard();
@@ -3504,13 +3539,29 @@ async function connectBLE() {
           document.getElementById('loginModal').classList.add('open');
         }
       }
-    }, 350);
+    }, 800);
 
   } catch (err) {
-    if (err && err.name !== 'NotFoundError') {
-      console.warn("BLE connect note:", err);
+    if (syncTimeoutId) {
+      clearTimeout(syncTimeoutId);
+      syncTimeoutId = null;
     }
-    toast("Connection cancelled");
+    console.error("BLE connect error:", err);
+    if (err && (err.name === 'NotFoundError' || err.message?.includes('User cancelled'))) {
+      toast("Connection cancelled");
+    } else {
+      const errMsg = err && err.message ? err.message : (err && err.name ? err.name : "Connection failed");
+      toast("Connection error: " + errMsg);
+      showCustomDialog({
+        icon: "⚠️",
+        title: "Voice Box Not Connected",
+        desc: `Could not connect to Voice Box:<br><code style="background:var(--card-subtle); padding:4px 8px; border-radius:6px; font-size:0.8rem; display:inline-block; margin:8px 0; border:1px solid var(--border);">${errMsg}</code><br><br><strong>Troubleshooting:</strong><br>• Ensure Voice Box is powered ON.<br>• If it was frozen or unresponsive, <strong>hold Banana button for 3 seconds</strong> (or switch power off/on) to restart.<br>• Ensure Bluetooth is enabled on your Mac/PC.`,
+        actionText: "Try Again",
+        cancelText: "Dismiss"
+      }).then(retry => {
+        if (retry) connectBLE();
+      });
+    }
   }
 }
 
@@ -3522,6 +3573,10 @@ function handleBleNotification(event) {
     highlightButtonPress(idx);
   }
   else if (val.startsWith("ST:")) {
+    if (syncTimeoutId) {
+      clearTimeout(syncTimeoutId);
+      syncTimeoutId = null;
+    }
     // ST:<isSetup>:<ownerName>:<fwVersion>:<currentLang>
     const parts = val.split(':');
     const setupStatus = parts[1] === "1";
@@ -3554,12 +3609,8 @@ function handleBleNotification(event) {
 
     if (!isDeviceSetup) {
       document.getElementById('loginModal').classList.remove('open');
-      if (!document.getElementById('wizardModal').classList.contains('open') && !document.getElementById('customDialogModal').classList.contains('open')) {
-        checkFirmwareOnConnect().then((updating) => {
-          if (!updating && !isDeviceSetup && !document.getElementById('wizardModal').classList.contains('open')) {
-            launchSetupWizard();
-          }
-        });
+      if (!document.getElementById('wizardModal').classList.contains('open')) {
+        launchSetupWizard();
       }
     } else if (!isAuthenticated) {
       clearPinBoxes('loginPinBoxes');
@@ -3614,12 +3665,8 @@ function parseDeviceInfo(info) {
 
     if (!isDeviceSetup) {
       document.getElementById('loginModal').classList.remove('open');
-      if (!document.getElementById('wizardModal').classList.contains('open') && !document.getElementById('customDialogModal').classList.contains('open')) {
-        checkFirmwareOnConnect().then((updating) => {
-          if (!updating && !isDeviceSetup && !document.getElementById('wizardModal').classList.contains('open')) {
-            launchSetupWizard();
-          }
-        });
+      if (!document.getElementById('wizardModal').classList.contains('open')) {
+        launchSetupWizard();
       }
     } else if (!isAuthenticated) {
       clearPinBoxes('loginPinBoxes');
@@ -3732,6 +3779,7 @@ function isFwOutdated() {
 
 async function checkFirmwareOnConnect() {
   if (updatePromptShown) return false;
+  if (!isDeviceSetup) return false; // Never interrupt new device setup
   if (isFwOutdated()) {
     updatePromptShown = true;
     const ok = await showCustomDialog({
@@ -3739,7 +3787,7 @@ async function checkFirmwareOnConnect() {
       title: `${LATEST_FW.title} Available`,
       desc: `Your Voice Box is running firmware <strong>v${deviceFwVersion || "1.0.0"}</strong>.<br><br>We recommend installing <strong>${LATEST_FW.title}</strong> to enable:<br>• Dual matched voice personas (Studio Male &amp; Google Female)<br>• Remapped buttons (Apple 4, Banana 3, Mango 2, Grapes 1, Orange 0)<br>• Emergency restart by holding Banana button<br>• Hardware safety watchdog timer`,
       actionText: "Install Update Now",
-      cancelText: isDeviceSetup ? "Later" : "Continue Setup"
+      cancelText: "Later"
     });
     if (ok) {
       startOtaUpdate();
@@ -3931,11 +3979,20 @@ function disconnectBLE() {
 }
 
 function onDisconnected() {
+  if (syncTimeoutId) {
+    clearTimeout(syncTimeoutId);
+    syncTimeoutId = null;
+  }
   isAuthenticated = false;
   updatePromptShown = false;
   updateUIState(false);
   toast("Voice box disconnected");
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('btnConnectHero');
+  if (btn) btn.addEventListener('click', handleConnectClick);
+});
 
 renderChannels();
 </script>
