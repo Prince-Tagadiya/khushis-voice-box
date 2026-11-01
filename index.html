@@ -1396,10 +1396,10 @@
             <button class="lang-btn" id="langBtnGu" onclick="switchLanguage('gu')">ગુજ</button>
             <button class="lang-btn" id="langBtnBoth" onclick="switchLanguage('both')">Both</button>
           </div>
-          <!-- Voice Engine Switcher (Default vs Google Girl Voice) -->
-          <div class="voice-selector" id="voiceSelector" title="English Voice Engine">
-            <button class="lang-btn active" id="voiceBtnStudio" onclick="switchVoice('studio')" title="Warm Default Voice">🎙️ Default</button>
-            <button class="lang-btn" id="voiceBtnGoogle" onclick="switchVoice('google')" title="Crisp Google Girl Voice">✨ Google</button>
+          <!-- Voice Engine Switcher (Default Male vs Google Female) -->
+          <div class="voice-selector" id="voiceSelector" title="Voice Persona (Matched Across Languages)">
+            <button class="lang-btn active" id="voiceBtnStudio" onclick="switchVoice('studio')" title="Studio Male Voice (EN &amp; GU)">🎙️ Default</button>
+            <button class="lang-btn" id="voiceBtnGoogle" onclick="switchVoice('google')" title="Google Female Voice (EN &amp; GU)">✨ Google</button>
           </div>
         </div>
         <div class="device-controls-tray">
@@ -1477,13 +1477,13 @@
       </div>
 
       <div id="wizVoiceSection" style="margin-bottom:24px;">
-        <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Voice Engine (English):</p>
+        <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Voice Persona (Matched Voice Across Languages):</p>
         <div class="wiz-lang-row">
           <button type="button" class="wiz-lang-pill active" id="wvoiceStudio" onclick="selectWizVoice('studio')">
-            🎙️ Default Voice
+            🎙️ Default (Male)
           </button>
           <button type="button" class="wiz-lang-pill" id="wvoiceGoogle" onclick="selectWizVoice('google')">
-            ✨ Google Girl Voice
+            ✨ Google (Female)
           </button>
         </div>
       </div>
@@ -1890,14 +1890,30 @@ function switchVoice(mode, silent = false) {
   const mTxt = document.getElementById('mTabVoiceText');
   if (mTxt) mTxt.textContent = mode === 'google' ? 'Google' : 'Voice';
 
+  // Sync to physical box over BLE
+  if (cmdChar && bleDevice && bleDevice.gatt && bleDevice.gatt.connected) {
+    try {
+      const enc = new TextEncoder();
+      cmdChar.writeValue(enc.encode(`SETVOICE:${mode === 'google' ? 1 : 0}`));
+    } catch (e) {}
+  }
+
   if (!silent) {
     playUiSound('tap');
     if (mode === 'google') {
-      playEmbeddedClip('google_preview');
-      toast("Voice: Google Girl Voice (Crisp & Clear)");
+      if (currentLang === 'gu') {
+        playEmbeddedClip('google_safarjan');
+      } else {
+        playEmbeddedClip('google_preview');
+      }
+      toast("Voice: Google Female (EN & GU)");
     } else {
-      playEmbeddedClip('apple');
-      toast("Voice: Default Voice (Warm Studio)");
+      if (currentLang === 'gu') {
+        playEmbeddedClip('male_safarjan');
+      } else {
+        playEmbeddedClip('apple');
+      }
+      toast("Voice: Default Male (EN & GU)");
     }
   }
 }
@@ -1937,9 +1953,17 @@ function selectWizVoice(mode) {
   if (gBtn) gBtn.className = `wiz-lang-pill ${mode === 'google' ? 'active' : ''}`;
   playUiSound('tap');
   if (mode === 'google') {
-    playEmbeddedClip('google_preview');
+    if (wizSelectedLang === 'gu') {
+      playEmbeddedClip('google_safarjan');
+    } else {
+      playEmbeddedClip('google_preview');
+    }
   } else {
-    playEmbeddedClip('apple');
+    if (wizSelectedLang === 'gu') {
+      playEmbeddedClip('male_safarjan');
+    } else {
+      playEmbeddedClip('apple');
+    }
   }
 }
 
@@ -1965,10 +1989,10 @@ let fileTargetIndex = -1;
 
 // Latest OTA Release Config
 const LATEST_FW = {
-  version: "1.2.2",
-  title: "VoiceOS v1.2.2",
-  binUrl: "firmware/voicebox_fw_v1.2.2.bin",
-  changelog: "Remapped buttons: Apple GPIO 4, Banana GPIO 3, Mango GPIO 2, Grapes GPIO 1, Orange GPIO 0"
+  version: "1.2.3",
+  title: "VoiceOS v1.2.3",
+  binUrl: "firmware/voicebox_fw_v1.2.3.bin",
+  changelog: "Dual Voice Personas (Studio Male & Google Female) with 100% matched speech across English & Gujarati"
 };
 
 // Mic recording state
@@ -2833,15 +2857,25 @@ function previewTTS(idx) {
 
   let clipKey = null;
   if (norm.includes('apple') || norm.includes('સફરજન') || (idx === 0 && (!norm || norm === 'apple' || norm === 'સફરજન'))) {
-    clipKey = (currentLang === 'gu' || norm.includes('સફરજન')) ? 'safarjan' : (isGoogle ? 'google_apple' : 'apple');
+    clipKey = (currentLang === 'gu' || norm.includes('સફરજન'))
+      ? (isGoogle ? 'google_safarjan' : 'male_safarjan')
+      : (isGoogle ? 'google_apple' : 'apple');
   } else if (norm.includes('banana') || norm.includes('કેળ') || (idx === 1 && (!norm || norm === 'banana' || norm === 'કેળું'))) {
-    clipKey = (currentLang === 'gu' || norm.includes('કેળ')) ? 'kelu' : (isGoogle ? 'google_banana' : 'banana');
+    clipKey = (currentLang === 'gu' || norm.includes('કેળ'))
+      ? (isGoogle ? 'google_kelu' : 'male_kelu')
+      : (isGoogle ? 'google_banana' : 'banana');
   } else if (norm.includes('mango') || norm.includes('કેરી') || (idx === 2 && (!norm || norm === 'mango' || norm === 'કેરી'))) {
-    clipKey = (currentLang === 'gu' || norm.includes('કેરી')) ? 'keri' : (isGoogle ? 'google_mango' : 'mango');
+    clipKey = (currentLang === 'gu' || norm.includes('કેરી'))
+      ? (isGoogle ? 'google_keri' : 'male_keri')
+      : (isGoogle ? 'google_mango' : 'mango');
   } else if (norm.includes('grape') || norm.includes('દ્રાક્ષ') || (idx === 3 && (!norm || norm === 'grapes' || norm === 'દ્રાક્ષ'))) {
-    clipKey = (currentLang === 'gu' || norm.includes('દ્રાક્ષ')) ? 'draksh' : (isGoogle ? 'google_grapes' : 'grapes');
+    clipKey = (currentLang === 'gu' || norm.includes('દ્રાક્ષ'))
+      ? (isGoogle ? 'google_draksh' : 'male_draksh')
+      : (isGoogle ? 'google_grapes' : 'grapes');
   } else if (norm.includes('orange') || norm.includes('નારંગી') || (idx === 4 && (!norm || norm === 'orange' || norm === 'નારંગી'))) {
-    clipKey = (currentLang === 'gu' || norm.includes('નારંગી')) ? 'narangi' : (isGoogle ? 'google_orange' : 'orange');
+    clipKey = (currentLang === 'gu' || norm.includes('નારંગી'))
+      ? (isGoogle ? 'google_narangi' : 'male_narangi')
+      : (isGoogle ? 'google_orange' : 'orange');
   }
 
   if (clipKey && ef[clipKey]) {
@@ -2877,31 +2911,31 @@ async function sendTTS(idx) {
 
   if (norm.includes('apple') || norm.includes('સફરજન') || (idx === 0 && (!norm || norm === 'apple' || norm === 'સફરજન'))) {
     if (currentLang === 'gu' || norm.includes('સફરજન')) {
-      b64 = ef.safarjan || ef.apple;
+      b64 = isGoogle ? (ef.google_safarjan || ef.safarjan) : (ef.male_safarjan || ef.safarjan);
     } else {
       b64 = isGoogle ? (ef.google_apple || ef.apple) : ef.apple;
     }
   } else if (norm.includes('banana') || norm.includes('કેળ') || (idx === 1 && (!norm || norm === 'banana' || norm === 'કેળું'))) {
     if (currentLang === 'gu' || norm.includes('કેળ')) {
-      b64 = ef.kelu || ef.banana;
+      b64 = isGoogle ? (ef.google_kelu || ef.kelu) : (ef.male_kelu || ef.kelu);
     } else {
       b64 = isGoogle ? (ef.google_banana || ef.banana) : ef.banana;
     }
   } else if (norm.includes('mango') || norm.includes('કેરી') || (idx === 2 && (!norm || norm === 'mango' || norm === 'કેરી'))) {
     if (currentLang === 'gu' || norm.includes('કેરી')) {
-      b64 = ef.keri || ef.mango;
+      b64 = isGoogle ? (ef.google_keri || ef.keri) : (ef.male_keri || ef.keri);
     } else {
       b64 = isGoogle ? (ef.google_mango || ef.mango) : ef.mango;
     }
   } else if (norm.includes('grape') || norm.includes('દ્રાક્ષ') || (idx === 3 && (!norm || norm === 'grapes' || norm === 'દ્રાક્ષ'))) {
     if (currentLang === 'gu' || norm.includes('દ્રાક્ષ')) {
-      b64 = ef.draksh || ef.grapes;
+      b64 = isGoogle ? (ef.google_draksh || ef.draksh) : (ef.male_draksh || ef.draksh);
     } else {
       b64 = isGoogle ? (ef.google_grapes || ef.grapes) : ef.grapes;
     }
   } else if (norm.includes('orange') || norm.includes('નારંગી') || (idx === 4 && (!norm || norm === 'orange' || norm === 'નારંગી'))) {
     if (currentLang === 'gu' || norm.includes('નારંગી')) {
-      b64 = ef.narangi || ef.orange;
+      b64 = isGoogle ? (ef.google_orange || ef.orange) : (ef.male_narangi || ef.narangi);
     } else {
       b64 = isGoogle ? (ef.google_orange || ef.orange) : ef.orange;
     }
@@ -3215,6 +3249,9 @@ async function completeSetupWizard() {
     // Save language quietly without speaking random fruit
     await cmdChar.writeValue(enc.encode(`SETLANG:${wizSelectedLang}`));
     await new Promise(r => setTimeout(r, 60));
+    // Save voice persona quietly to physical box
+    await cmdChar.writeValue(enc.encode(`SETVOICE:${wizSelectedVoice === 'google' ? 1 : 0}`));
+    await new Promise(r => setTimeout(r, 60));
     // Play serene calm confirmation harmony from physical speaker
     await cmdChar.writeValue(enc.encode("CHIME:calm"));
     switchLanguage(wizSelectedLang);
@@ -3498,6 +3535,11 @@ function handleBleNotification(event) {
     if (lGu) lGu.className = `lang-btn ${langCode === 'gu' ? 'active' : ''}`;
     if (lBoth) lBoth.className = `lang-btn ${langCode === 'both' ? 'active' : ''}`;
 
+    if (parts.length >= 7 && (parts[6] === "0" || parts[6] === "1")) {
+      const vMode = (parts[6] === "1") ? "google" : "studio";
+      switchVoice(vMode, true);
+    }
+
     checkFirmwareUpdate();
 
     if (!isDeviceSetup) {
@@ -3687,7 +3729,7 @@ function updateHeaderVersionBadge() {
 
   badge.style.display = 'inline-flex';
   const curVer = deviceFwVersion || "1.0.0";
-  const tgtVer = LATEST_FW.version || "1.2.0";
+  const tgtVer = LATEST_FW.version || "1.2.3";
 
   const curParts = curVer.split('.').map(s => parseInt(s, 10) || 0);
   const tgtParts = tgtVer.split('.').map(s => parseInt(s, 10) || 0);
@@ -3695,14 +3737,14 @@ function updateHeaderVersionBadge() {
   let isOutdated = false;
   for (let i = 0; i < 3; i++) {
     const cur = curParts[i] || 0;
-    const tgt = targetParts[i] || 0;
+    const tgt = tgtParts[i] || 0;
     if (cur < tgt) { isOutdated = true; break; }
     if (cur > tgt) { isOutdated = false; break; }
   }
 
   if (isOutdated) {
     badge.className = 'fw-version-badge update-available';
-    txt.textContent = `v${curVer} · Latest: v${tgtVer} ⬆`;
+    txt.textContent = `v${curVer} · Update to v${tgtVer} ⬆`;
     badge.title = `Update available! Box is running v${curVer}, latest is v${tgtVer}. Click to install.`;
   } else {
     badge.className = 'fw-version-badge up-to-date';
@@ -3714,7 +3756,7 @@ function updateHeaderVersionBadge() {
 function handleHeaderVersionClick() {
   playUiSound('tap');
   const curVer = deviceFwVersion || "1.0.0";
-  const tgtVer = LATEST_FW.version || "1.2.0";
+  const tgtVer = LATEST_FW.version || "1.2.3";
   const curParts = curVer.split('.').map(s => parseInt(s, 10) || 0);
   const tgtParts = tgtVer.split('.').map(s => parseInt(s, 10) || 0);
   let isOutdated = false;
