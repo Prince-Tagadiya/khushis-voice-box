@@ -1976,6 +1976,7 @@ let channels = [
 ];
 
 let deviceName = "Voice Box";
+let ownerName = "";
 let deviceFwVersion = "1.0.0";
 let isDeviceSetup = false;
 let isTransferring = false;
@@ -3173,8 +3174,9 @@ function getWizardFullName() {
 function launchSetupWizard() {
   const fName = document.getElementById('wizFirstName');
   // Never clear if user already started entering their name!
-  if (fName && !fName.value && ownerName && ownerName !== "Voice Box") {
-    const cleanPrefix = ownerName.replace(/['’]s?\s*Voice\s*Box/i, '').trim();
+  const nameToUse = ownerName || deviceName || "";
+  if (fName && !fName.value && nameToUse && nameToUse !== "Voice Box") {
+    const cleanPrefix = nameToUse.replace(/['’]s?\s*Voice\s*Box/i, '').trim();
     fName.value = cleanPrefix;
   }
   updateWizNamePreview();
@@ -3521,6 +3523,7 @@ function handleBleNotification(event) {
     const langIdx = parts[4] || "0";
 
     isDeviceSetup = setupStatus;
+    ownerName = name;
     deviceName = name;
     deviceFwVersion = fwVer;
     document.getElementById('deviceNameLabel').textContent = name;
@@ -3579,6 +3582,7 @@ function parseDeviceInfo(info) {
 
     isDeviceSetup = setupStatus;
     if (name) {
+      ownerName = name;
       deviceName = name;
       document.getElementById('deviceNameLabel').textContent = name;
     }
