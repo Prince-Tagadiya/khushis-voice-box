@@ -5,3 +5,12 @@ __pycache__/
 .vscode/
 build/
 
+# Firmware source code (Private - IP Protected)
+*.ino
+fruit_speaker/
+fruit_speaker_ble/
+fruit_speaker_sleep/
+audio.h
+firmware_bin/
+*.elf
+*.map
