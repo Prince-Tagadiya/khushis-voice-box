@@ -2174,7 +2174,7 @@ function closePreviewModal() {
 }
 
 function generateCaregiverCanvas() {
-  const pin = (getPinValue('wizPin1') || devicePin || '1234').padStart(4, '0').slice(0, 4);
+  const pin = (getPinValue('wizPin1') || devicePin || '').slice(0, 4);
   const rawName = getWizardFullName() || deviceName || "Voice Box";
 
   const canvas = document.createElement('canvas');
@@ -3253,7 +3253,11 @@ function triggerCalmChimeTest() {
 
 async function completeSetupWizard() {
   const name = getWizardFullName();
-  const pin = getPinValue('wizPin1') || "1234";
+  const pin = getPinValue('wizPin1');
+  if (!pin || pin.length !== 4) {
+    toast("Please enter a 4-digit PIN");
+    return;
+  }
 
   deviceName = name;
   ownerName = name;
@@ -3691,7 +3695,7 @@ async function submitLoginPin() {
       }
     } catch (e) {}
 
-    if (authSuccess || pin === "1234") {
+    if (authSuccess) {
       isAuthenticated = true;
       closeLoginModal();
       playBoxChime();
@@ -3701,16 +3705,12 @@ async function submitLoginPin() {
       return;
     }
 
-    toast("Incorrect PIN (Default: 1234)");
+    toast("Incorrect PIN");
     clearPinBoxes('loginPinBoxes');
   } catch (e) {
-    console.error(e);
-    isAuthenticated = true;
-    closeLoginModal();
-    playBoxChime();
-    updateUIState(true);
-    toast(`Connected to ${deviceName}`);
-    checkFirmwareOnConnect();
+    console.error("Auth error:", e);
+    toast("Authentication error");
+    clearPinBoxes('loginPinBoxes');
   }
 }
 
