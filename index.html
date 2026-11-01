@@ -3238,6 +3238,7 @@ async function completeSetupWizard() {
   const pin = getPinValue('wizPin1') || "1234";
 
   deviceName = name;
+  ownerName = name;
   isDeviceSetup = true;
   isAuthenticated = true;
   document.getElementById('deviceNameLabel').textContent = name;
@@ -3248,14 +3249,20 @@ async function completeSetupWizard() {
     const enc = new TextEncoder();
     await cmdChar.writeValue(enc.encode(`SETUP:${pin}:${name}`));
     await new Promise(r => setTimeout(r, 60));
-    // Save language quietly without speaking random fruit
     await cmdChar.writeValue(enc.encode(`SETLANG:${wizSelectedLang}`));
     await new Promise(r => setTimeout(r, 60));
-    // Save voice persona quietly to physical box
-    await cmdChar.writeValue(enc.encode(`SETVOICE:${wizSelectedVoice === 'google' ? 1 : 0}`));
-    await new Promise(r => setTimeout(r, 60));
-    // Play serene calm confirmation harmony from physical speaker
-    await cmdChar.writeValue(enc.encode("CHIME:calm"));
+
+    // Safe backward compatibility: only send SETVOICE and CHIME:calm to v1.2.3+
+    const curParts = (deviceFwVersion || "1.0.0").split('.').map(s => parseInt(s, 10) || 0);
+    const supportsVoiceMode = (curParts[0] > 1 || (curParts[0] === 1 && (curParts[1] > 2 || (curParts[1] === 2 && curParts[2] >= 3))));
+    if (supportsVoiceMode) {
+      await cmdChar.writeValue(enc.encode(`SETVOICE:${wizSelectedVoice === 'google' ? 1 : 0}`));
+      await new Promise(r => setTimeout(r, 60));
+      await cmdChar.writeValue(enc.encode("CHIME:calm"));
+    } else {
+      // Safe 2-tone chime for older firmwares that never freezes or makes weird sounds
+      await cmdChar.writeValue(enc.encode("CHIME"));
+    }
     switchLanguage(wizSelectedLang);
     switchVoice(wizSelectedVoice, true);
   } catch (e) {}
@@ -3547,12 +3554,20 @@ function handleBleNotification(event) {
 
     if (!isDeviceSetup) {
       document.getElementById('loginModal').classList.remove('open');
-      if (!document.getElementById('wizardModal').classList.contains('open')) {
-        launchSetupWizard();
+      if (!document.getElementById('wizardModal').classList.contains('open') && !document.getElementById('customDialogModal').classList.contains('open')) {
+        checkFirmwareOnConnect().then((updating) => {
+          if (!updating && !isDeviceSetup && !document.getElementById('wizardModal').classList.contains('open')) {
+            launchSetupWizard();
+          }
+        });
       }
     } else if (!isAuthenticated) {
       clearPinBoxes('loginPinBoxes');
-      document.getElementById('loginModal').classList.add('open');
+      checkFirmwareOnConnect().then((updating) => {
+        if (!updating && !isAuthenticated && !document.getElementById('loginModal').classList.contains('open')) {
+          document.getElementById('loginModal').classList.add('open');
+        }
+      });
     }
   }
   else if (val.startsWith("CH:")) {
@@ -3599,12 +3614,20 @@ function parseDeviceInfo(info) {
 
     if (!isDeviceSetup) {
       document.getElementById('loginModal').classList.remove('open');
-      if (!document.getElementById('wizardModal').classList.contains('open')) {
-        launchSetupWizard();
+      if (!document.getElementById('wizardModal').classList.contains('open') && !document.getElementById('customDialogModal').classList.contains('open')) {
+        checkFirmwareOnConnect().then((updating) => {
+          if (!updating && !isDeviceSetup && !document.getElementById('wizardModal').classList.contains('open')) {
+            launchSetupWizard();
+          }
+        });
       }
     } else if (!isAuthenticated) {
       clearPinBoxes('loginPinBoxes');
-      document.getElementById('loginModal').classList.add('open');
+      checkFirmwareOnConnect().then((updating) => {
+        if (!updating && !isAuthenticated && !document.getElementById('loginModal').classList.contains('open')) {
+          document.getElementById('loginModal').classList.add('open');
+        }
+      });
     }
   }
 }
@@ -3693,21 +3716,42 @@ function updateUIState(connected) {
 // ─────────────────────────────────────────────────────────────────────────────
 //  SAFE DUAL-PARTITION OTA FIRMWARE UPDATE & ROLLBACK
 // ─────────────────────────────────────────────────────────────────────────────
-function checkFirmwareUpdate() {
-  const banner = document.getElementById('updateBanner');
+let updatePromptShown = false;
 
-  // Semantic version comparison:
-  // If the device is running the latest version (1.2.0 >= 1.2.0), do NOT show the install button!
+function isFwOutdated() {
   const curParts = (deviceFwVersion || "1.0.0").split('.').map(s => parseInt(s, 10) || 0);
-  const targetParts = (LATEST_FW.version || "1.2.0").split('.').map(s => parseInt(s, 10) || 0);
-
-  let isOutdated = false;
+  const targetParts = (LATEST_FW.version || "1.2.3").split('.').map(s => parseInt(s, 10) || 0);
   for (let i = 0; i < 3; i++) {
     const cur = curParts[i] || 0;
     const tgt = targetParts[i] || 0;
-    if (cur < tgt) { isOutdated = true; break; }
-    if (cur > tgt) { isOutdated = false; break; }
+    if (cur < tgt) return true;
+    if (cur > tgt) return false;
   }
+  return false;
+}
+
+async function checkFirmwareOnConnect() {
+  if (updatePromptShown) return false;
+  if (isFwOutdated()) {
+    updatePromptShown = true;
+    const ok = await showCustomDialog({
+      icon: "🚀",
+      title: `${LATEST_FW.title} Available`,
+      desc: `Your Voice Box is running firmware <strong>v${deviceFwVersion || "1.0.0"}</strong>.<br><br>We recommend installing <strong>${LATEST_FW.title}</strong> to enable:<br>• Dual matched voice personas (Studio Male &amp; Google Female)<br>• Remapped buttons (Apple 4, Banana 3, Mango 2, Grapes 1, Orange 0)<br>• Emergency restart by holding Banana button<br>• Hardware safety watchdog timer`,
+      actionText: "Install Update Now",
+      cancelText: isDeviceSetup ? "Later" : "Continue Setup"
+    });
+    if (ok) {
+      startOtaUpdate();
+      return true;
+    }
+  }
+  return false;
+}
+
+function checkFirmwareUpdate() {
+  const banner = document.getElementById('updateBanner');
+  const isOutdated = isFwOutdated();
 
   if (banner) {
     if (isOutdated) {
@@ -3888,6 +3932,7 @@ function disconnectBLE() {
 
 function onDisconnected() {
   isAuthenticated = false;
+  updatePromptShown = false;
   updateUIState(false);
   toast("Voice box disconnected");
 }
