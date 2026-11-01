@@ -44,9 +44,9 @@ Open the live Web Bluetooth studio directly from Google Chrome, Microsoft Edge, 
 ## 🛠️ Hardware Requirements
 
 - **Microcontroller**: ESP32-C3 Super Mini
-- **I2S DAC / Amplifier**: MAX98357A (Gain tied to GND for maximum clarity)
+- **I2S DAC / Amplifier**: MAX98357A (BCLK GPIO 6, LRC GPIO 7, DIN GPIO 10)
 - **Speaker**: 16-Ohm, 0.25W / 8-Ohm, 1W
-- **Tactile Buttons**: 5 momentary push buttons (GPIO 0, 1, 2, 3, 4) with internal pull-ups
+- **Tactile Buttons**: 5 momentary push buttons to GND (Apple GPIO 4, Banana GPIO 3, Mango GPIO 2, Grapes GPIO 1, Orange GPIO 0) with internal pull-ups
 
 ---
 
