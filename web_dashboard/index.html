@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Khushi's Voice Box — Creato4 Lab</title>
+<title>Voice Box — Creato4 Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
@@ -1251,7 +1251,7 @@
 <!-- Footer -->
 <footer>
   <div class="footer-inner">
-    <span>Voice Box · Creato4 Lab · <span class="diwali-support-pill" tabindex="0">Till 31 Dec 2026<span class="diwali-tooltip">🪔 <strong>Official App Support Active</strong><br>Complimentary support is active till <strong>31 Dec 2026</strong>.<br><br>This assistive web companion is engineered with love by <strong>Creato4 Lab</strong> as a Diwali gift for Khushi’s Voice Box.</span></span></span>
+    <span>Voice Box · Creato4 Lab · <span class="diwali-support-pill" tabindex="0">Till 31 Dec 2026<span class="diwali-tooltip">🪔 <strong>Official App Support Active</strong><br>Complimentary support is active till <strong>31 Dec 2026</strong>.<br><br>This assistive web companion is engineered with love by <strong>Creato4 Lab</strong> as a Diwali gift for Voice Box.</span></span></span>
     <div style="display:flex; gap:12px; align-items:center;">
       <button class="footer-btn" id="footerRollbackBtn" onclick="handleRollbackFirmware()" style="display:none;">Rollback Firmware</button>
       <button class="footer-reset-btn" id="footerResetBtn" onclick="handleFactoryReset()">Factory Reset & Format</button>
@@ -2651,7 +2651,7 @@ function getWizardFullName() {
 function launchSetupWizard() {
   const fName = document.getElementById('wizFirstName');
   // Never clear if user already started entering their name!
-  if (fName && !fName.value && ownerName && ownerName !== "Khushi") {
+  if (fName && !fName.value && ownerName && ownerName !== "Voice Box") {
     const cleanPrefix = ownerName.replace(/['’]s?\s*Voice\s*Box/i, '').trim();
     fName.value = cleanPrefix;
   }
@@ -2923,10 +2923,8 @@ async function connectBLE() {
         filters: [
           { services: [SERVICE_UUID] },
           { name: "VoiceBox" },
-          { name: "KhushiVoiceBox" },
           { name: "FruitSpeaker" },
           { namePrefix: "Voice" },
-          { namePrefix: "Khushi" },
           { namePrefix: "Fruit" }
         ],
         optionalServices: [SERVICE_UUID]

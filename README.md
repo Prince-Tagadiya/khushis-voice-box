@@ -1,4 +1,4 @@
-# Khushi's Voice Box
+# Voice Box
 
 > **Tactile Speech Assistant for Focused Cognitive Processing & Single-Touch Clarity**  
 > Designed & Developed by **Creato4 Lab**
@@ -7,7 +7,7 @@
 
 ## 🌟 Overview
 
-**Khushi's Voice Box** is an assistive hardware speech box engineered for individuals with speech processing delays, apraxia, or cognitive hesitation. 
+**Voice Box** is an assistive hardware speech box engineered for individuals with speech processing delays, apraxia, or cognitive hesitation. 
 
 It provides **physical tactile buttons** connected to an ESP32-C3 microcontroller and a crystal-clear MAX98357A I2S amplifier with a built-in shouting engine. Users can take all the time they need to formulate intent, then press a single tactile button to speak clearly and loudly through the physical speaker.
 
