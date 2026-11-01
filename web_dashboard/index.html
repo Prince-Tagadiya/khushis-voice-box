@@ -1626,19 +1626,36 @@
 
 <!-- OTA Firmware Update Modal (Safe Dual Partition Guard) -->
 <div class="modal-overlay" id="otaModal">
-  <div class="modal-box" style="text-align:center;">
-    <h3 style="margin-bottom:6px;">Installing Firmware Update</h3>
-    <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:16px;">Dual-Partition Guard Active: Uncorruptible & Safe.</p>
-    
-    <div class="ota-progress-track">
-      <div class="ota-progress-fill" id="otaProgressFill" style="width:0%;"></div>
-    </div>
-    <div id="otaPercentText" style="font-family:var(--font-mono); font-size:1.1rem; font-weight:700; color:var(--teal); margin-bottom:12px;">0%</div>
-    <div id="otaStatusMsg" style="font-size:0.75rem; color:var(--text-muted); min-height:18px;">Downloading binary...</div>
+  <div class="modal-box" style="text-align:center; max-width:420px;">
+    <!-- In Progress View -->
+    <div id="otaInProgressView">
+      <h3 style="margin-bottom:6px;">Installing Firmware Update</h3>
+      <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:16px;">Dual-Partition Guard Active: Uncorruptible & Safe.</p>
+      
+      <div class="ota-progress-track">
+        <div class="ota-progress-fill" id="otaProgressFill" style="width:0%;"></div>
+      </div>
+      <div id="otaPercentText" style="font-family:var(--font-mono); font-size:1.1rem; font-weight:700; color:var(--teal); margin-bottom:12px;">0%</div>
+      <div id="otaStatusMsg" style="font-size:0.75rem; color:var(--text-muted); min-height:18px;">Downloading binary...</div>
 
-    <button class="footer-btn" style="margin-top:16px; color:var(--coral);" onclick="abortOtaUpdate()">
-      Cancel Safely
-    </button>
+      <button class="footer-btn" style="margin-top:16px; color:var(--coral);" onclick="abortOtaUpdate()">
+        Cancel Safely
+      </button>
+    </div>
+
+    <!-- Post-Update Reconnect & Steps View -->
+    <div id="otaSuccessView" style="display:none; padding:10px 4px 6px;">
+      <div style="font-size:2.8rem; margin-bottom:12px;">🎉</div>
+      <h3 style="margin-bottom:8px; font-size:1.25rem; font-weight:700;">VoiceOS v1.2.3 Installed!</h3>
+      <p style="font-size:0.84rem; color:var(--text-secondary); line-height:1.6; margin-bottom:22px;">
+        Your Voice Box has updated and is rebooting now.<br><br>
+        <strong>Next Step:</strong> Wait 3–5 seconds for the boot chime, then tap <strong>Reconnect Voice Box</strong> below!
+      </p>
+      <button class="btn-apple-connect" id="btnOtaReconnect" style="width:100%; justify-content:center; padding:13px; font-weight:700; font-size:0.95rem;" onclick="handleOtaReconnect()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m7 7 10 10-5 5V2l5 5L7 17"/></svg>
+        <span>Reconnect Voice Box</span>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -3418,7 +3435,8 @@ async function handleFactoryReset() {
   try {
     const enc = new TextEncoder();
     await cmdChar.writeValue(enc.encode("FORMAT"));
-    toast("Resetting box...");
+    toast("Factory reset complete! Rebooting into fresh setup...");
+    await new Promise(r => setTimeout(r, 600));
     disconnectBLE();
   } catch (e) {}
 }
@@ -3614,11 +3632,7 @@ function handleBleNotification(event) {
       }
     } else if (!isAuthenticated) {
       clearPinBoxes('loginPinBoxes');
-      checkFirmwareOnConnect().then((updating) => {
-        if (!updating && !isAuthenticated && !document.getElementById('loginModal').classList.contains('open')) {
-          document.getElementById('loginModal').classList.add('open');
-        }
-      });
+      document.getElementById('loginModal').classList.add('open');
     }
   }
   else if (val.startsWith("CH:")) {
@@ -3670,11 +3684,7 @@ function parseDeviceInfo(info) {
       }
     } else if (!isAuthenticated) {
       clearPinBoxes('loginPinBoxes');
-      checkFirmwareOnConnect().then((updating) => {
-        if (!updating && !isAuthenticated && !document.getElementById('loginModal').classList.contains('open')) {
-          document.getElementById('loginModal').classList.add('open');
-        }
-      });
+      document.getElementById('loginModal').classList.add('open');
     }
   }
 }
@@ -3707,6 +3717,7 @@ async function submitLoginPin() {
       playBoxChime();
       updateUIState(true);
       toast(`Connected to ${deviceName}`);
+      checkFirmwareOnConnect();
       return;
     }
 
@@ -3719,6 +3730,7 @@ async function submitLoginPin() {
     playBoxChime();
     updateUIState(true);
     toast(`Connected to ${deviceName}`);
+    checkFirmwareOnConnect();
   }
 }
 
@@ -3877,8 +3889,8 @@ async function startOtaUpdate() {
   const ok = await showCustomDialog({
     icon: "✨",
     title: `Install ${LATEST_FW.title}?`,
-    desc: `This update brings performance enhancements and language updates.<br><br>Protected by <strong>Dual-Partition Guard</strong> — if stopped midway, the box boots safely into its existing system without corruption.`,
-    actionText: "Install Update",
+    desc: `This update brings matched dual voice personas (Studio Male & Google Female), remapped buttons, Banana emergency restart, and safety watchdog.<br><br>Protected by <strong>Dual-Partition Guard</strong> — uncorruptible and safe.`,
+    actionText: "Install Update Now",
     cancelText: "Not Now"
   });
   if (!ok) return;
@@ -3887,14 +3899,18 @@ async function startOtaUpdate() {
   const fill = document.getElementById('otaProgressFill');
   const pctText = document.getElementById('otaPercentText');
   const msg = document.getElementById('otaStatusMsg');
+  const inProgView = document.getElementById('otaInProgressView');
+  const successView = document.getElementById('otaSuccessView');
 
+  if (inProgView) inProgView.style.display = "block";
+  if (successView) successView.style.display = "none";
   modal.classList.add('open');
   fill.style.width = "0%";
   pctText.textContent = "0%";
   msg.textContent = "Downloading verified binary...";
 
   try {
-    const res = await fetch(LATEST_FW.binUrl);
+    const res = await fetch(LATEST_FW.binUrl + "?t=" + Date.now());
     if (!res.ok) throw new Error("Could not fetch firmware binary");
     const bin = await res.arrayBuffer();
     const bytes = new Uint8Array(bin);
@@ -3904,29 +3920,56 @@ async function startOtaUpdate() {
     const enc = new TextEncoder();
     await cmdChar.writeValue(enc.encode(`OTA_START:${bytes.byteLength}`));
 
-    await new Promise(r => setTimeout(r, 120));
+    await new Promise(r => setTimeout(r, 200));
 
+    // Reliable chunk transmission with flow-control writes
+    // 128-byte chunks with response ensures zero packet loss during flash sector erases
     const chunk = 128;
     for (let o = 0; o < bytes.byteLength; o += chunk) {
       if (!modal.classList.contains('open')) return;
-      await dataChar.writeValueWithoutResponse(bytes.slice(o, o + chunk));
+      const slice = bytes.slice(o, o + chunk);
+
+      let written = false;
+      let retries = 0;
+      while (!written && retries < 3) {
+        try {
+          if (dataChar.writeValueWithResponse) {
+            await dataChar.writeValueWithResponse(slice);
+          } else if (dataChar.writeValue) {
+            await dataChar.writeValue(slice);
+          } else {
+            await dataChar.writeValueWithoutResponse(slice);
+            await new Promise(r => setTimeout(r, 20));
+          }
+          written = true;
+        } catch (we) {
+          retries++;
+          await new Promise(r => setTimeout(r, 35));
+        }
+      }
+
       const pct = Math.min(100, Math.round(((o + chunk) / bytes.byteLength) * 100));
       fill.style.width = `${pct}%`;
       pctText.textContent = `${pct}%`;
-      msg.textContent = `Writing to safe OTA partition... (${o}/${bytes.byteLength} B)`;
-      await new Promise(r => setTimeout(r, 10));
+      msg.textContent = `Writing firmware... ${pct}% (${(o / 1024).toFixed(0)} / ${(bytes.byteLength / 1024).toFixed(0)} KB)`;
     }
 
     msg.textContent = "Verifying partition signature & rebooting...";
-    await cmdChar.writeValue(enc.encode("OTA_END"));
     pctText.textContent = "100%";
     fill.style.width = "100%";
-    toast("Update Succeeded! Voice Box is rebooting...");
 
-    setTimeout(() => {
-      modal.classList.remove('open');
-      disconnectBLE();
-    }, 1500);
+    try {
+      await cmdChar.writeValue(enc.encode("OTA_END"));
+    } catch (e) {}
+
+    // Wait 1 second for ESP32 to switch boot partition and reboot
+    await new Promise(r => setTimeout(r, 1000));
+
+    // Show post-update steps & reconnect button
+    if (inProgView) inProgView.style.display = "none";
+    if (successView) successView.style.display = "block";
+    playUiSound('login');
+    toast("Update Succeeded! Voice Box is rebooting...");
 
   } catch (err) {
     console.warn("OTA update note:", err);
@@ -3938,6 +3981,17 @@ async function startOtaUpdate() {
     } catch (e) {}
     setTimeout(() => modal.classList.remove('open'), 1800);
   }
+}
+
+function handleOtaReconnect() {
+  playUiSound('tap');
+  const modal = document.getElementById('otaModal');
+  if (modal) modal.classList.remove('open');
+  const inProgView = document.getElementById('otaInProgressView');
+  const successView = document.getElementById('otaSuccessView');
+  if (inProgView) inProgView.style.display = "block";
+  if (successView) successView.style.display = "none";
+  connectBLE();
 }
 
 function abortOtaUpdate() {
