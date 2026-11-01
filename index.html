@@ -2,7 +2,13 @@
 <html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#f8fafc" id="metaThemeColor">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Voice Box">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="creato4logo.png">
 <title>Voice Box — Creato4 Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -933,6 +939,405 @@
     transform: translateX(-50%) translateY(0);
   }
 
+  /* ── Channel Header & Primary Action Components ── */
+  .channel-header-mobile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .channel-num-badge {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--teal);
+    background: var(--teal-bg);
+    border: 1px solid var(--teal-border);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+  }
+  .channel-quick-actions {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .channel-primary-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .action-pill.icon-only {
+    padding: 7px 10px;
+    font-size: 0.8rem;
+  }
+  .device-controls-row1 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .device-controls-tray {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     MOBILE NATIVE APP EXPERIENCE & COMPREHENSIVE RESPONSIVENESS
+     ═════════════════════════════════════════════════════════════════════════ */
+
+  :root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Mobile App Bottom Navigation Dock */
+  .mobile-app-bottom-bar {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 300;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    padding: 6px 12px calc(8px + var(--safe-bottom));
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04);
+    animation: slideUpBar 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  [data-theme="dark"] .mobile-app-bottom-bar {
+    background: rgba(19, 26, 41, 0.92);
+    border-top-color: var(--border);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  @keyframes slideUpBar {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  .mobile-tab-btn {
+    appearance: none;
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 6px 10px;
+    border-radius: 12px;
+    color: var(--text-secondary);
+    font-family: var(--font);
+    font-size: 0.68rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    min-width: 58px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-tab-btn:active {
+    transform: scale(0.92);
+  }
+
+  .mobile-tab-btn.active, .mobile-tab-btn:hover {
+    color: var(--teal);
+  }
+
+  .mobile-tab-btn .m-tab-icon {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s ease;
+  }
+
+  .mobile-tab-btn.active .m-tab-icon {
+    transform: translateY(-1px);
+    color: var(--teal);
+  }
+
+  /* Media Queries for Screens <= 768px */
+  @media (max-width: 768px) {
+    body {
+      padding-bottom: calc(72px + var(--safe-bottom));
+      touch-action: manipulation;
+    }
+
+    /* Show mobile dock */
+    .mobile-app-bottom-bar {
+      display: flex;
+    }
+
+    /* Main container padding */
+    main {
+      margin: 14px auto;
+      padding: 0 12px;
+    }
+
+    /* Header styling on mobile */
+    header {
+      padding-top: var(--safe-top);
+    }
+    .header-inner {
+      padding: 10px 14px;
+      gap: 8px;
+    }
+    .brand-logo {
+      height: 26px;
+    }
+    .brand-title {
+      font-size: 0.95rem;
+      max-width: 140px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .nav-right {
+      gap: 6px;
+    }
+    .fw-version-badge {
+      padding: 4px 8px;
+      font-size: 0.68rem;
+      gap: 4px;
+    }
+    .fw-version-badge #headerFwLatest {
+      display: none;
+    }
+    .status-pill {
+      padding: 4px 8px;
+      font-size: 0.68rem;
+      gap: 5px;
+    }
+
+    /* Device Bar on Mobile */
+    .device-bar {
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      gap: 10px;
+    }
+    .device-meta {
+      width: 100%;
+      justify-content: space-between;
+    }
+    .device-controls {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .device-controls-row1 {
+      display: flex;
+      width: 100%;
+      gap: 8px;
+    }
+    .device-controls-row1 .lang-selector,
+    .device-controls-row1 .voice-selector {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+    }
+    .device-controls-row1 .lang-btn {
+      flex: 1;
+      text-align: center;
+      padding: 7px 4px;
+      font-size: 0.72rem;
+    }
+    .device-controls-tray {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      width: 100%;
+      padding-bottom: 2px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .device-controls-tray::-webkit-scrollbar {
+      display: none;
+    }
+    .device-controls-tray .pill-btn {
+      white-space: nowrap;
+      flex-shrink: 0;
+      padding: 7px 12px;
+      font-size: 0.74rem;
+    }
+
+    /* Live Button Sync Bar on Mobile */
+    .sync-bar {
+      flex-direction: column;
+      align-items: stretch;
+      padding: 10px 12px;
+      gap: 8px;
+    }
+    .sync-label {
+      font-size: 0.74rem;
+      text-align: center;
+    }
+    .sync-buttons {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+      width: 100%;
+    }
+    .sync-btn {
+      padding: 8px 2px;
+      flex-direction: column;
+      gap: 2px;
+      font-size: 0.68rem;
+      text-align: center;
+      justify-content: center;
+      min-width: 0;
+    }
+    .sync-btn span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    /* Channel Cards on Mobile (Tactile Card Layout) */
+    .channel-row {
+      padding: 14px 14px;
+      border-radius: var(--radius-md);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+      gap: 10px;
+    }
+    .channel-top {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+    }
+    .channel-header-mobile {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+    .channel-badge {
+      font-size: 0.92rem;
+      gap: 6px;
+    }
+    .channel-quick-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .action-pill.icon-only {
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      min-height: 34px;
+    }
+    .channel-input {
+      width: 100%;
+      min-width: 0;
+      font-size: 0.95rem;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+    }
+    .channel-primary-actions {
+      display: grid;
+      grid-template-columns: 1fr 1.25fr;
+      gap: 8px;
+      width: 100%;
+    }
+    .channel-primary-actions .action-pill {
+      justify-content: center;
+      padding: 10px 12px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      min-height: 44px;
+      border-radius: var(--radius-sm);
+    }
+
+    /* Mobile Toast Position */
+    #toast {
+      bottom: calc(75px + var(--safe-bottom));
+      width: 90%;
+      max-width: 380px;
+      text-align: center;
+    }
+
+    /* Footer adjustments on mobile */
+    footer {
+      padding: 16px 14px calc(24px + var(--safe-bottom));
+    }
+    .footer-inner {
+      flex-direction: column;
+      gap: 12px;
+      text-align: center;
+      font-size: 0.75rem;
+    }
+
+    /* Modals on Mobile: Native Bottom Sheet style */
+    .modal-overlay {
+      padding: 0;
+      align-items: flex-end;
+    }
+    .modal-box {
+      width: 100%;
+      max-width: 100% !important;
+      border-radius: 24px 24px 0 0;
+      padding: 24px 18px calc(24px + var(--safe-bottom));
+      max-height: 92vh;
+      overflow-y: auto;
+      animation: slideUpSheet 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes slideUpSheet {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .modal-close {
+      top: 18px;
+      right: 18px;
+      font-size: 1.5rem;
+      padding: 6px;
+    }
+
+    /* Setup Wizard Card on Mobile */
+    .wizard-card {
+      width: 100%;
+      padding: 26px 18px calc(24px + var(--safe-bottom));
+      border-radius: 24px 24px 0 0;
+      max-height: 94vh;
+      overflow-y: auto;
+    }
+    .wizard-backdrop {
+      padding: 0;
+      align-items: flex-end;
+    }
+    .name-input-group {
+      padding: 6px 10px;
+    }
+    .name-prefix-input {
+      font-size: 1rem;
+    }
+    .name-suffix-pill {
+      font-size: 1rem;
+    }
+  }
+
+  /* Extra Small Devices (iPhone SE / narrow screens <= 380px) */
+  @media (max-width: 380px) {
+    .brand-title {
+      max-width: 110px;
+      font-size: 0.88rem;
+    }
+    .sync-btn {
+      font-size: 0.62rem;
+      padding: 6px 1px;
+    }
+    .channel-primary-actions {
+      grid-template-columns: 1fr;
+    }
+  }
+
   input[type="file"] { display: none; }
 </style>
 </head>
@@ -984,22 +1389,26 @@
         <button class="device-edit-btn" onclick="openRenameModal()">Edit</button>
       </div>
       <div class="device-controls">
-        <!-- Language Switcher: English, Gujarati, Both -->
-        <div class="lang-selector">
-          <button class="lang-btn active" id="langBtnEn" onclick="switchLanguage('en')">EN</button>
-          <button class="lang-btn" id="langBtnGu" onclick="switchLanguage('gu')">ગુજ</button>
-          <button class="lang-btn" id="langBtnBoth" onclick="switchLanguage('both')">Both</button>
+        <div class="device-controls-row1">
+          <!-- Language Switcher: English, Gujarati, Both -->
+          <div class="lang-selector">
+            <button class="lang-btn active" id="langBtnEn" onclick="switchLanguage('en')">EN</button>
+            <button class="lang-btn" id="langBtnGu" onclick="switchLanguage('gu')">ગુજ</button>
+            <button class="lang-btn" id="langBtnBoth" onclick="switchLanguage('both')">Both</button>
+          </div>
+          <!-- Voice Engine Switcher (Default vs Google Girl Voice) -->
+          <div class="voice-selector" id="voiceSelector" title="English Voice Engine">
+            <button class="lang-btn active" id="voiceBtnStudio" onclick="switchVoice('studio')" title="Warm Default Voice">🎙️ Default</button>
+            <button class="lang-btn" id="voiceBtnGoogle" onclick="switchVoice('google')" title="Crisp Google Girl Voice">✨ Google</button>
+          </div>
         </div>
-        <!-- Voice Engine Switcher (Default vs Google Girl Voice) -->
-        <div class="voice-selector" id="voiceSelector" title="English Voice Engine">
-          <button class="lang-btn active" id="voiceBtnStudio" onclick="switchVoice('studio')" title="Warm Default Voice">🎙️ Default</button>
-          <button class="lang-btn" id="voiceBtnGoogle" onclick="switchVoice('google')" title="Crisp Google Girl Voice">✨ Google</button>
+        <div class="device-controls-tray">
+          <button class="pill-btn" onclick="openCardPreview('pincard')" title="Preview and Download Caregiver PIN Card with Real PIN">🎴 PIN Card</button>
+          <button class="pill-btn" onclick="openCardPreview('story')" title="Preview and Download Minimalist Instagram Story">📱 Story</button>
+          <button class="pill-btn" onclick="openChangePinModal()">Change PIN</button>
+          <button class="pill-btn" onclick="handleSleepDevice()">Sleep</button>
+          <button class="pill-btn danger" onclick="disconnectBLE()">Disconnect</button>
         </div>
-        <button class="pill-btn" onclick="openCardPreview('pincard')" title="Preview and Download Caregiver PIN Card with Real PIN">🎴 PIN Card</button>
-        <button class="pill-btn" onclick="openCardPreview('story')" title="Preview and Download Minimalist Instagram Story">📱 Story</button>
-        <button class="pill-btn" onclick="openChangePinModal()">Change PIN</button>
-        <button class="pill-btn" onclick="handleSleepDevice()">Sleep</button>
-        <button class="pill-btn danger" onclick="disconnectBLE()">Disconnect</button>
       </div>
     </div>
 
@@ -1259,6 +1668,44 @@
   </div>
 </footer>
 
+<!-- Mobile Native App Bottom Navigation Bar -->
+<nav class="mobile-app-bottom-bar" id="mobileBottomBar">
+  <button class="mobile-tab-btn active" id="mTabChannels" onclick="handleMobileTab('channels')">
+    <div class="m-tab-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/></svg>
+    </div>
+    <span>Buttons</span>
+  </button>
+
+  <button class="mobile-tab-btn" id="mTabVoice" onclick="handleMobileTab('voice')">
+    <div class="m-tab-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+    </div>
+    <span id="mTabVoiceText">Voice</span>
+  </button>
+
+  <button class="mobile-tab-btn" id="mTabPinCard" onclick="handleMobileTab('pincard')">
+    <div class="m-tab-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><line x1="15" y1="8" x2="17" y2="8"/><line x1="7" y1="15" x2="17" y2="15"/></svg>
+    </div>
+    <span>PIN Card</span>
+  </button>
+
+  <button class="mobile-tab-btn" id="mTabStory" onclick="handleMobileTab('story')">
+    <div class="m-tab-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+    </div>
+    <span>Story</span>
+  </button>
+
+  <button class="mobile-tab-btn" id="mTabPower" onclick="handleMobileTab('power')">
+    <div class="m-tab-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+    </div>
+    <span>Sleep</span>
+  </button>
+</nav>
+
 <script src="fruits_audio.js"></script>
 <script src="speakGenerator.js"></script>
 <script>
@@ -1393,11 +1840,16 @@ function playEmbeddedClip(clipKey) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  THEME TOGGLE
+//  THEME TOGGLE & PWA APP STATUS BAR
 // ─────────────────────────────────────────────────────────────────────────────
+function applyThemeMeta(theme) {
+  const meta = document.getElementById('metaThemeColor');
+  if (meta) meta.setAttribute('content', theme === 'dark' ? '#090d16' : '#f8fafc');
+}
 function initTheme() {
   const t = localStorage.getItem('fs_theme') || 'light';
   document.documentElement.setAttribute('data-theme', t);
+  applyThemeMeta(t);
 }
 function toggleTheme() {
   playUiSound('tap');
@@ -1405,6 +1857,7 @@ function toggleTheme() {
   const next = cur === 'dark' ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', next);
   localStorage.setItem('fs_theme', next);
+  applyThemeMeta(next);
 }
 initTheme();
 
@@ -1434,6 +1887,9 @@ function switchVoice(mode, silent = false) {
   if (btnStudio) btnStudio.className = `lang-btn ${mode === 'studio' ? 'active' : ''}`;
   if (btnGoogle) btnGoogle.className = `lang-btn ${mode === 'google' ? 'active' : ''}`;
 
+  const mTxt = document.getElementById('mTabVoiceText');
+  if (mTxt) mTxt.textContent = mode === 'google' ? 'Google' : 'Voice';
+
   if (!silent) {
     playUiSound('tap');
     if (mode === 'google') {
@@ -1445,6 +1901,33 @@ function switchVoice(mode, silent = false) {
     }
   }
 }
+
+function handleMobileTab(tab) {
+  playUiSound('tap');
+  document.querySelectorAll('.mobile-tab-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById(`mTab${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+  if (btn) btn.classList.add('active');
+
+  if (tab === 'channels') {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (tab === 'voice') {
+    const nextVoice = (currentVoice === 'google') ? 'studio' : 'google';
+    switchVoice(nextVoice);
+  } else if (tab === 'pincard') {
+    openCardPreview('pincard');
+  } else if (tab === 'story') {
+    openCardPreview('story');
+  } else if (tab === 'power') {
+    handleSleepDevice();
+  }
+}
+
+window.addEventListener('resize', () => {
+  const mbBar = document.getElementById('mobileBottomBar');
+  if (mbBar) {
+    mbBar.style.display = (isAuthenticated && window.innerWidth <= 768) ? 'flex' : 'none';
+  }
+});
 
 function selectWizVoice(mode) {
   wizSelectedVoice = mode;
@@ -2128,17 +2611,33 @@ function renderChannels() {
 
     row.innerHTML = `
       <div class="channel-top">
-        <div class="channel-badge">
-          <span>${icon}</span>
-          <span>${fruit}</span>
-          ${ch.custom ? '<span class="custom-tag" title="Custom speech (English)">CUSTOM · EN</span>' : ''}
+        <div class="channel-header-mobile">
+          <div class="channel-badge">
+            <span class="channel-num-badge">0${i + 1}</span>
+            <span>${icon}</span>
+            <span>${fruit}</span>
+            ${ch.custom ? '<span class="custom-tag" title="Custom speech (English)">CUSTOM · EN</span>' : ''}
+          </div>
+          <div class="channel-quick-actions">
+            <button class="action-pill icon-only" onclick="previewTTS(${i})" title="Listen to current voice">
+              <span>🔊</span>
+            </button>
+            <button class="action-pill icon-only" onclick="pickFile(${i})" title="Upload audio file">
+              <span>📁</span>
+            </button>
+            ${ch.custom ? `
+              <button class="action-pill icon-only danger" onclick="resetChannel(${i})" title="Restore default">
+                <span>↺</span>
+              </button>
+            ` : ''}
+          </div>
         </div>
 
         <input type="text" class="channel-input" id="inp-${i}" value="${ch.label}"
                placeholder="Word (e.g. ${fruit})" maxlength="20"
                oninput="channels[${i}].label = this.value; updateSyncPillLabels();">
 
-        <div class="channel-tools">
+        <div class="channel-primary-actions">
           <button class="action-pill record" id="rec-btn-${i}" onclick="toggleRecord(${i})">
             <span>🎤</span>
             <span id="rec-lbl-${i}">Record</span>
@@ -2146,17 +2645,6 @@ function renderChannels() {
           <button class="action-pill primary" onclick="sendTTS(${i})">
             <span>Send</span>
           </button>
-          <button class="action-pill" onclick="previewTTS(${i})">
-            <span>Listen</span>
-          </button>
-          <button class="action-pill" onclick="pickFile(${i})">
-            <span>📁</span>
-          </button>
-          ${ch.custom ? `
-            <button class="action-pill" onclick="resetChannel(${i})" title="Restore default">
-              <span>↺</span>
-            </button>
-          ` : ''}
         </div>
       </div>
 
@@ -3138,6 +3626,8 @@ function updateUIState(connected) {
     checkFirmwareUpdate();
     updateHeaderVersionBadge();
     switchVoice(currentVoice, true);
+    const mbBar = document.getElementById('mobileBottomBar');
+    if (mbBar) mbBar.style.display = (window.innerWidth <= 768) ? 'flex' : 'none';
   } else {
     pill.classList.remove('connected');
     txt.textContent = "Disconnected";
@@ -3149,6 +3639,8 @@ function updateUIState(connected) {
     document.getElementById('updateBanner').style.display = "none";
     const hBadge = document.getElementById('headerVersionBadge');
     if (hBadge) hBadge.style.display = "none";
+    const mbBar = document.getElementById('mobileBottomBar');
+    if (mbBar) mbBar.style.display = "none";
   }
 }
 
